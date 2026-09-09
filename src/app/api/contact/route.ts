@@ -329,12 +329,6 @@ function buildSenderHtml(payload: ContactPayload) {
       <a href="${profile.website}" class="icon-link" title="Portfolio">
         <img src="https://img.icons8.com/ios-filled/100/71717a/domain.png" alt="Portfolio" width="24" height="24" />
       </a>
-      <a href="https://wa.me/6285155487647" class="icon-link" title="WhatsApp">
-        <img src="https://img.icons8.com/ios-filled/100/71717a/whatsapp--v1.png" alt="WhatsApp" width="24" height="24" />
-      </a>
-      <a href="https://linkedin.com/in/firdauskhotibulzickrian/" class="icon-link" title="LinkedIn">
-        <img src="https://img.icons8.com/ios-filled/100/71717a/linkedin.png" alt="LinkedIn" width="24" height="24" />
-      </a>
     </div>
 
     <div class="footer">This is an automated response from <a href="${profile.website}">${profile.website}</a></div>
@@ -408,16 +402,17 @@ export async function POST(req: Request) {
     }
 
     // Send both emails concurrently
+    const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev"
     const [ownerResult, senderResult] = await Promise.allSettled([
       resend.emails.send({
-        from: `${profile.displayName} Portfolio <hello@zickrian.dev>`,
+        from: `${profile.displayName} Portfolio <${fromEmail}>`,
         to: [OWNER_EMAIL],
         replyTo: senderEmail,
         subject: `[Contact] ${subject} - from ${senderName}`,
         html: buildOwnerHtml(payload),
       }),
       resend.emails.send({
-        from: `${profile.displayName} <hello@zickrian.dev>`,
+        from: `${profile.displayName} <${fromEmail}>`,
         to: [senderEmail],
         subject: `Message received! – ${profile.displayName}`,
         html: buildSenderHtml(payload),

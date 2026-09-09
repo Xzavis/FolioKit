@@ -4,7 +4,7 @@ import profile from "@/content/profile.json"
 
 import { PROFILE_IMAGE_DATA_URI } from "./seo-logo-loader"
 
-export const alt = `${profile.displayName} - AI & Machine Learning Engineer`
+export const alt = `${profile.displayName} - ${profile.jobTitle}`
 export const size = {
   width: 1200,
   height: 630,
@@ -12,6 +12,10 @@ export const size = {
 export const contentType = "image/png"
 
 export default async function OpengraphImage() {
+  const displayDomain = profile.website
+    ? profile.website.replace(/^https?:\/\//, "").replace(/\/$/, "")
+    : profile.username || "portfolio"
+
   return new ImageResponse(
     (
       <div
@@ -23,20 +27,36 @@ export default async function OpengraphImage() {
           alignItems: "flex-start",
           justifyContent: "space-between",
           padding: "80px",
-          background: "#09090b",
+          backgroundColor: "#09090b",
           color: "#fafafa",
           fontFamily: "sans-serif",
         }}
       >
-        <img
-          src={PROFILE_IMAGE_DATA_URI}
-          width={100}
-          height={100}
-          alt=""
-          style={{ borderRadius: 16 }}
-        />
+        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+          <img
+            src={PROFILE_IMAGE_DATA_URI}
+            alt={profile.displayName}
+            width={120}
+            height={120}
+            style={{
+              borderRadius: "50%",
+              border: "3px solid #27272a",
+            }}
+          />
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <span
+              style={{
+                fontSize: 24,
+                color: "#71717a",
+                fontFamily: "monospace",
+              }}
+            >
+              @{profile.username}
+            </span>
+          </div>
+        </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div
             style={{
               fontSize: 72,
@@ -58,7 +78,7 @@ export default async function OpengraphImage() {
             fontFamily: "monospace",
           }}
         >
-          zickrian.dev
+          {displayDomain}
         </div>
       </div>
     ),

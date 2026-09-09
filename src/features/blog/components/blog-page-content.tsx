@@ -6,7 +6,7 @@ import Image from "next/image"
 import { Reveal } from "@/components/core/reveal"
 import type { MediumPost } from "@/features/blog/lib/fetch-medium-posts"
 import { fetchMediumPosts } from "@/features/blog/lib/fetch-medium-posts"
-import { getBlogPosts } from "@/lib/content"
+import { getBlogPosts, getProfile } from "@/lib/content"
 
 import { BlogEmptyState } from "./blog-empty-state"
 
@@ -22,7 +22,17 @@ function formatDate(dateStr: string): string {
   }
 }
 
-function BlogListItem({ post, eager }: { post: MediumPost; eager?: boolean }) {
+function BlogListItem({
+  post,
+  eager,
+  authorName = "Author",
+  authorAvatar = "/image/default-avatar.svg",
+}: {
+  post: MediumPost
+  eager?: boolean
+  authorName?: string
+  authorAvatar?: string
+}) {
   return (
     <Reveal>
       <div className="group border-b border-line bg-background transition-[background-color] ease-out hover:bg-accent-muted">
@@ -39,7 +49,7 @@ function BlogListItem({ post, eager }: { post: MediumPost; eager?: boolean }) {
             <div className="mb-2.5 flex items-center gap-2">
               <div className="relative size-5 shrink-0 overflow-hidden rounded-full border border-line bg-muted">
                 <Image
-                  src="/image/profile.webp"
+                  src={authorAvatar}
                   alt=""
                   fill
                   sizes="20px"
@@ -47,7 +57,7 @@ function BlogListItem({ post, eager }: { post: MediumPost; eager?: boolean }) {
                 />
               </div>
               <span className="text-[13px] text-foreground/80">
-                Firdaus Khotibul Zickrian
+                {authorName}
               </span>
               <span className="text-muted-foreground/60 select-none">·</span>
               <time
@@ -104,10 +114,14 @@ function BlogListItem({ post, eager }: { post: MediumPost; eager?: boolean }) {
 }
 
 export async function BlogPageContent() {
-  const [localPosts, mediumPosts] = await Promise.all([
+  const [profile, localPosts, mediumPosts] = await Promise.all([
+    getProfile().catch(() => null),
     getBlogPosts().catch(() => []),
     fetchMediumPosts().catch(() => []),
   ])
+
+  const authorName = profile?.displayName || "Author"
+  const authorAvatar = profile?.avatar || "/image/default-avatar.svg"
 
   // Filter published local posts
   const publishedLocal: MediumPost[] = localPosts
@@ -146,7 +160,13 @@ export async function BlogPageContent() {
   return (
     <div>
       {posts.map((post, index) => (
-        <BlogListItem key={post.guid} post={post} eager={index === 0} />
+        <BlogListItem
+          key={post.guid}
+          post={post}
+          eager={index === 0}
+          authorName={authorName}
+          authorAvatar={authorAvatar}
+        />
       ))}
     </div>
   )

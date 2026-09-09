@@ -1,57 +1,30 @@
-import AWARDS from "@/content/awards.json"
-import CERTIFICATIONS from "@/content/certifications.json"
-import asahDicoding from "@/content/experiences/asah-dicoding-accenture.json"
-import blockvizo from "@/content/experiences/blockvizo.json"
-import custompedia from "@/content/experiences/custompedia.json"
-import dinusLab from "@/content/experiences/dinus-lab-assistant.json"
-import education from "@/content/experiences/education.json"
-import gdgocDinus from "@/content/experiences/gdgoc-dinus.json"
-import pijakIbm from "@/content/experiences/pijak-ibm.json"
-import USER from "@/content/profile.json"
-import baseRealms from "@/content/projects/base-realms.json"
-import brazilianEcommerce from "@/content/projects/brazilian-ecommerce-dashboard.json"
-import custora from "@/content/projects/custora.json"
-import diabetesClassification from "@/content/projects/diabetes-classification.json"
-import financialAssistant from "@/content/projects/financial-assistant-bot.json"
-import floodsegmen from "@/content/projects/floodsegmen.json"
-import imageclas from "@/content/projects/imageclas.json"
-import leadsup from "@/content/projects/leadsup.json"
-import lostandfound from "@/content/projects/lostandfound.json"
-import machineLearningSystem from "@/content/projects/machine-learning-system.json"
-import naratioai from "@/content/projects/naratioai.json"
-import polsekrembang from "@/content/projects/polsekrembang.json"
-import qmeal from "@/content/projects/qmeal.json"
-import PUBLICATIONS from "@/content/publications.json"
-import SETTINGS from "@/content/settings.json"
-import TECH_STACK from "@/content/skills.json"
-import SOCIAL_LINKS from "@/content/social-links.json"
-import type { Experience, Project } from "@/lib/content/types"
+// ponytail: dynamic content repository retrieval instead of hardcoded JSON imports
+import { LocalContentRepository } from "@/lib/content"
+import type {
+  Award,
+  Certification,
+  Experience,
+  Profile,
+  Project,
+  Publication,
+  SiteSettings,
+  SocialLink,
+  TechStack,
+} from "@/lib/content/types"
+import { decodeEmail } from "@/utils/string"
 
-const EXPERIENCES: Experience[] = [
-  custompedia,
-  pijakIbm,
-  dinusLab,
-  asahDicoding,
-  blockvizo,
-  gdgocDinus,
-  education,
-]
+export type PortfolioData = {
+  user: Profile
+  settings: SiteSettings
+  projects: Project[]
+  experiences: Experience[]
+  techStack: TechStack[]
+  socialLinks: SocialLink[]
+  awards: Award[]
+  certifications: Certification[]
+  publications: Publication[]
+}
 
-const PROJECTS: Project[] = [
-  naratioai,
-  custora,
-  baseRealms,
-  leadsup,
-  qmeal,
-  polsekrembang,
-  brazilianEcommerce,
-  financialAssistant,
-  machineLearningSystem,
-  lostandfound,
-  floodsegmen,
-  diabetesClassification,
-  imageclas,
-]
 
 type GitHubContributionStatus = {
   available: boolean
@@ -91,39 +64,6 @@ type RankedDocument = PortfolioDocument & {
 // Baseline types always included regardless of query
 const BASELINE_TYPES = new Set<PortfolioDocumentType>(["profile", "contact"])
 
-// Where the FULL list of each type actually lives on the site, used to tell
-// the model where to send the user when the retrieved context only shows a
-// subset. Projects have a dedicated page; the rest live in homepage sections.
-const SECTION_LINKS: Partial<
-  Record<PortfolioDocumentType, { total: number; url: string; noun: string }>
-> = {
-  project: {
-    total: PROJECTS.length,
-    url: `${USER.website}/projects`,
-    noun: "project",
-  },
-  experience: {
-    total: EXPERIENCES.reduce((sum, exp) => sum + exp.positions.length, 0),
-    url: `${USER.website}/#experience`,
-    noun: "role",
-  },
-  award: {
-    total: AWARDS.length,
-    url: `${USER.website}/#awards`,
-    noun: "award",
-  },
-  certification: {
-    total: CERTIFICATIONS.length,
-    url: `${USER.website}/#certs`,
-    noun: "certification",
-  },
-  publication: {
-    total: PUBLICATIONS.length,
-    url: `${USER.website}/#publications`,
-    noun: "publication",
-  },
-}
-
 // Hard request budget. The fixed wrappers are intentionally included in the
 // remaining 200-character buffer below.
 const MAX_CONTEXT_CHARS = 4200
@@ -134,30 +74,6 @@ const DIVERSITY_MIN_SCORE = 15
 // Lower threshold for broad "semua" queries - we want more docs, not fewer
 const DIVERSITY_MIN_SCORE_BROAD = 10
 
-// ─── Module-level IDF Cache ────────────────────────────────────────────────
-// The static portfolio corpus (without per-request github data) never changes
-// between requests in the same server instance. Computing IDF once and caching
-// it eliminates ~10–20ms of CPU waste on every chat request.
-let _cachedStaticIdf: Map<string, number> | null = null
-
-function getStaticIdf(): Map<string, number> {
-  if (!_cachedStaticIdf) {
-    const staticCorpus = createPortfolioCorpus(
-      { available: false, contributionDays: 0 },
-      undefined
-    )
-    _cachedStaticIdf = computeIdf(staticCorpus)
-  }
-  return _cachedStaticIdf
-}
-
-function decodeBase64(value: string) {
-  try {
-    return Buffer.from(value, "base64").toString("utf8")
-  } catch {
-    return undefined
-  }
-}
 
 function compactText(value: string | undefined, maxLength = 1500) {
   if (!value) return undefined
@@ -553,9 +469,11 @@ function computeIdf(corpus: PortfolioDocument[]): Map<string, number> {
 // ─── Document Builders ─────────────────────────────────────────────────────
 
 function createProfileDocument(
+  user: Profile,
+  settings: SiteSettings,
   intent?: ReturnType<typeof getQueryIntent>
 ): PortfolioDocument {
-  const email = decodeBase64(USER.email)
+  const email = decodeEmail(user.email)
 
   // Only include the dense `about` biography when the query is profile/introduction
   // focused. For specific queries (stack, project, sibuk apa, etc.) it adds noise.
@@ -571,39 +489,44 @@ function createProfileDocument(
       !intent.wantsCertification &&
       !intent.wantsPublication)
 
+  const flipSentences = user.flipSentences || []
+  const jobs = user.jobs || []
+
   return {
     id: "profile",
     type: "profile",
-    title: USER.displayName,
-    summary: USER.bio,
+    title: user.displayName,
+    summary: user.bio,
     details: joinLines([
-      isProfileFocused ? compactText(USER.about, 900) : undefined,
-      `Current focus: ${USER.flipSentences.map((item) => item.trim()).join(", ")}.`,
-      `Current public roles: ${USER.jobs
-        .map((job) => `${job.title} at ${job.company}`)
-        .join("; ")}.`,
-      `Location: ${USER.address}.`,
-      `Website: ${USER.website}.`,
+      isProfileFocused ? compactText(user.about, 900) : undefined,
+      flipSentences.length ? `Current focus: ${flipSentences.map((item) => item.trim()).join(", ")}.` : undefined,
+      jobs.length
+        ? `Current public roles: ${jobs
+            .map((job) => `${job.title} at ${job.company}`)
+            .join("; ")}.`
+        : undefined,
+      user.address ? `Location: ${user.address}.` : undefined,
+      user.website ? `Website: ${user.website}.` : undefined,
       email ? `Email: ${email}.` : undefined,
-      USER.phone ? `Phone: ${USER.phone}.` : undefined,
+      user.phone ? `Phone: ${user.phone}.` : undefined,
     ]),
     keywords: [
-      USER.displayName,
-      USER.username,
-      USER.jobTitle,
-      USER.bio,
-      ...USER.flipSentences,
-      ...SETTINGS.keywords,
+      user.displayName,
+      user.username,
+      user.jobTitle,
+      user.bio,
+      ...flipSentences,
+      ...(settings.keywords || []),
     ],
-    url: USER.website,
+    url: user.website,
     priority: 18,
   }
 }
 
-function createProjectDocuments(): PortfolioDocument[] {
+function createProjectDocuments(projects: Project[]): PortfolioDocument[] {
   const chunks: PortfolioDocument[] = []
 
-  for (const project of PROJECTS) {
+  for (const project of projects) {
     const basePriority =
       project.year === new Date().getFullYear().toString() ? 16 : 13
     const commonKeywords = [
@@ -611,9 +534,9 @@ function createProjectDocuments(): PortfolioDocument[] {
       project.title,
       project.category,
       project.year,
-      project.collaboration.role,
-      project.collaboration.team,
-      project.collaboration.ownership,
+      project.collaboration?.role || "",
+      project.collaboration?.team || "",
+      project.collaboration?.ownership || "",
     ]
 
     // Chunk 1: Overview - who, what, when
@@ -621,18 +544,18 @@ function createProjectDocuments(): PortfolioDocument[] {
       id: `project:${project.id}`,
       type: "project",
       title: project.title,
-      summary: `${project.tagline} Period: ${formatPeriod(project.period)}. Ownership: ${project.collaboration.ownership}. Role: ${project.collaboration.role}.`,
+      summary: `${project.tagline || ""} Period: ${formatPeriod(project.period)}. Ownership: ${project.collaboration?.ownership || "Solo"}. Role: ${project.collaboration?.role || "Developer"}.`,
       details: joinLines([
         `Category: ${project.category}. Year: ${project.year}.`,
-        `Team: ${project.collaboration.team}.`,
+        project.collaboration?.team ? `Team: ${project.collaboration.team}.` : undefined,
         project.badge ? `Badge: ${project.badge}.` : undefined,
         compactText(project.description, 700),
-        `Links: primary ${project.link}; live ${project.links.live || "not available"}; repo ${project.links.repo || "not available"}.`,
+        `Links: primary ${project.link || "not available"}; live ${project.links?.live || "not available"}; repo ${project.links?.repo || "not available"}.`,
       ]),
       keywords: [
         ...commonKeywords,
         project.badge || "",
-        project.collaboration.ownership,
+        project.collaboration?.ownership || "",
       ],
       url: project.link,
       priority: basePriority,
@@ -646,14 +569,14 @@ function createProjectDocuments(): PortfolioDocument[] {
       title: `${project.title} - Tech Stack`,
       summary: `Technologies and tools used in ${project.title}.`,
       details: joinLines([
-        `Stack: ${project.skills.join(", ")}.`,
+        `Stack: ${(project.skills || []).join(", ")}.`,
         project.coverSkills?.length
           ? `Highlights: ${project.coverSkills.join(", ")}.`
           : undefined,
       ]),
       keywords: [
         ...commonKeywords,
-        ...project.skills,
+        ...(project.skills || []),
         ...(project.coverSkills || []),
       ],
       url: project.link,
@@ -668,9 +591,9 @@ function createProjectDocuments(): PortfolioDocument[] {
       title: `${project.title} - Contributions & Impact`,
       summary: `Contributions and impact for ${project.title}.`,
       details: joinLines([
-        `Features: ${project.features.join(" ")}`,
-        `Contributions: ${project.collaboration.contributions.join(" ")}`,
-        `Impact: ${project.impact.join(" ")}`,
+        project.features?.length ? `Features: ${project.features.join(" ")}` : undefined,
+        project.collaboration?.contributions?.length ? `Contributions: ${project.collaboration.contributions.join(" ")}` : undefined,
+        project.impact?.length ? `Impact: ${project.impact.join(" ")}` : undefined,
         project.notes ? `Notes: ${project.notes}.` : undefined,
       ]),
       keywords: [
@@ -690,7 +613,7 @@ function createProjectDocuments(): PortfolioDocument[] {
   return chunks
 }
 
-function createExperienceDocuments(): PortfolioDocument[] {
+function createExperienceDocuments(experiences: Experience[]): PortfolioDocument[] {
   const chunks: PortfolioDocument[] = []
 
   const educationKeywords = [
@@ -710,7 +633,7 @@ function createExperienceDocuments(): PortfolioDocument[] {
     "studi",
   ]
 
-  for (const experience of EXPERIENCES) {
+  for (const experience of experiences) {
     for (const position of experience.positions) {
       const isCurrentOrRecent =
         experience.isCurrentEmployer ||
@@ -772,8 +695,12 @@ function createExperienceDocuments(): PortfolioDocument[] {
   return chunks
 }
 
-function createSkillsDocument(): PortfolioDocument {
-  const grouped = TECH_STACK.reduce<Record<string, string[]>>(
+function createSkillsDocument(
+  techStack: TechStack[],
+  projects: Project[],
+  experiences: Experience[]
+): PortfolioDocument {
+  const grouped = techStack.reduce<Record<string, string[]>>(
     (groups, tech) => {
       for (const category of tech.categories) {
         groups[category] ??= []
@@ -784,11 +711,11 @@ function createSkillsDocument(): PortfolioDocument {
     {}
   )
   const projectSkills = Array.from(
-    new Set(PROJECTS.flatMap((project) => project.skills))
+    new Set(projects.flatMap((project) => project.skills || []))
   ).sort()
   const experienceSkills = Array.from(
     new Set(
-      EXPERIENCES.flatMap((experience) =>
+      experiences.flatMap((experience) =>
         experience.positions.flatMap((position) => position.skills || [])
       )
     )
@@ -814,7 +741,7 @@ function createSkillsDocument(): PortfolioDocument {
       "kemampuan",
       "tools",
       "stack",
-      ...TECH_STACK.map((tech) => tech.title),
+      ...techStack.map((tech) => tech.title),
       ...projectSkills,
       ...experienceSkills,
     ],
@@ -823,12 +750,13 @@ function createSkillsDocument(): PortfolioDocument {
 }
 
 function createOtherDocuments(
+  data: PortfolioData,
   github: GitHubContributionStatus
 ): PortfolioDocument[] {
-  const email = decodeBase64(USER.email)
+  const email = decodeEmail(data.user.email)
 
   return [
-    ...CERTIFICATIONS.map((certification) => ({
+    ...data.certifications.map((certification) => ({
       id: `certification:${certification.title}`,
       type: "certification" as const,
       title: certification.title,
@@ -853,7 +781,7 @@ function createOtherDocuments(
       url: certification.credentialURL,
       priority: 9,
     })),
-    ...AWARDS.map((award) => ({
+    ...data.awards.map((award) => ({
       id: `award:${award.id}`,
       type: "award" as const,
       title: `${award.prize} - ${award.title}`,
@@ -878,7 +806,7 @@ function createOtherDocuments(
       url: award.referenceLink,
       priority: 15,
     })),
-    ...PUBLICATIONS.map((publication) => ({
+    ...data.publications.map((publication) => ({
       id: `publication:${publication.id}`,
       type: "publication" as const,
       title: publication.title,
@@ -908,9 +836,9 @@ function createOtherDocuments(
       summary: "Public contact and social links available in the portfolio.",
       details: joinLines([
         email ? `Email: ${email}.` : undefined,
-        USER.phone ? `Phone: ${USER.phone}.` : undefined,
-        `Website: ${USER.website}.`,
-        `Social links: ${SOCIAL_LINKS.map((link) =>
+        data.user.phone ? `Phone: ${data.user.phone}.` : undefined,
+        data.user.website ? `Website: ${data.user.website}.` : undefined,
+        `Social links: ${data.socialLinks.map((link) =>
           [link.title, "subtitle" in link ? (link as { subtitle?: string }).subtitle : undefined, link.href].filter(Boolean).join(" - ")
         ).join("; ")}.`,
       ]),
@@ -926,9 +854,9 @@ function createOtherDocuments(
         "hubungi",
         "reach",
         "dm",
-        ...SOCIAL_LINKS.map((link) => link.title),
+        ...data.socialLinks.map((link) => link.title),
       ],
-      url: USER.website,
+      url: data.user.website,
       priority: 16,
     },
     {
@@ -939,12 +867,12 @@ function createOtherDocuments(
         ? `GitHub contribution data is available with ${github.contributionDays} active contribution days tracked.`
         : "GitHub contribution data could not be loaded for this request.",
       details: joinLines([
-        `GitHub username: ${USER.username}.`,
-        `GitHub profile URL: https://github.com/${USER.username}.`,
+        data.user.username ? `GitHub username: ${data.user.username}.` : undefined,
+        data.user.username ? `GitHub profile URL: https://github.com/${data.user.username}.` : undefined,
         github.available
           ? `Active on GitHub with ${github.contributionDays} contribution days tracked - reflects consistent coding and project activity.`
           : "GitHub activity data temporarily unavailable; check the profile directly for up-to-date contribution history.",
-        `Explore open-source projects, repositories, and commit history at: https://github.com/${USER.username}.`,
+        data.user.username ? `Explore open-source projects, repositories, and commit history at: https://github.com/${data.user.username}.` : undefined,
       ]),
       keywords: [
         "github",
@@ -953,24 +881,25 @@ function createOtherDocuments(
         "repo",
         "open source",
         "open-source",
-        USER.username,
+        data.user.username || "",
       ],
-      url: `https://github.com/${USER.username}`,
+      url: data.user.username ? `https://github.com/${data.user.username}` : undefined,
       priority: 10,
     },
   ]
 }
 
 function createPortfolioCorpus(
+  data: PortfolioData,
   github: GitHubContributionStatus,
   intent?: ReturnType<typeof getQueryIntent>
 ) {
   return [
-    createProfileDocument(intent),
-    ...createProjectDocuments(),
-    ...createExperienceDocuments(),
-    createSkillsDocument(),
-    ...createOtherDocuments(github),
+    createProfileDocument(data.user, data.settings, intent),
+    ...createProjectDocuments(data.projects),
+    ...createExperienceDocuments(data.experiences),
+    createSkillsDocument(data.techStack, data.projects, data.experiences),
+    ...createOtherDocuments(data, github),
   ]
 }
 
@@ -1373,8 +1302,40 @@ const ENTITY_GROUPS: Partial<
 
 function buildCoverageNotes(
   intent: ReturnType<typeof getQueryIntent>,
-  selected: RankedDocument[]
+  selected: RankedDocument[],
+  data: PortfolioData
 ): string {
+  const website = data.user.website || ""
+  const sectionLinks: Partial<
+    Record<PortfolioDocumentType, { total: number; url: string; noun: string }>
+  > = {
+    project: {
+      total: data.projects.length,
+      url: `${website}/projects`,
+      noun: "project",
+    },
+    experience: {
+      total: data.experiences.reduce((sum, exp) => sum + exp.positions.length, 0),
+      url: `${website}/#experience`,
+      noun: "role",
+    },
+    award: {
+      total: data.awards.length,
+      url: `${website}/#awards`,
+      noun: "award",
+    },
+    certification: {
+      total: data.certifications.length,
+      url: `${website}/#certs`,
+      noun: "certification",
+    },
+    publication: {
+      total: data.publications.length,
+      url: `${website}/#publications`,
+      noun: "publication",
+    },
+  }
+
   const checks: Array<[boolean, PortfolioDocumentType]> = [
     [intent.wantsProjects, "project"],
     [intent.wantsExperience, "experience"],
@@ -1386,7 +1347,7 @@ function buildCoverageNotes(
   const notes: string[] = []
 
   for (const [active, type] of checks) {
-    const link = SECTION_LINKS[type]
+    const link = sectionLinks[type]
     const group = ENTITY_GROUPS[type]
     if (!link || !group) continue
 
@@ -1397,11 +1358,6 @@ function buildCoverageNotes(
     ).size
     const remaining = link.total - shown
 
-    // Fires on explicit intent, or as a fallback when the retrieval ranked
-    // 2+ distinct entities of this type into context anyway (e.g. a typo like
-    // "projeck" that the intent regex misses but the ranker still surfaces
-    // real project docs for) - otherwise the model narrates a list with no
-    // idea it's partial and no correct link to hand out.
     if ((active || shown >= 2) && shown > 0 && remaining > 0) {
       notes.push(
         `${shown} ${link.noun}${shown === 1 ? "" : "s"} shown above, ${remaining} more not shown (do not recompute this number). If the user asked broadly, say ${remaining} more ${link.noun}${remaining === 1 ? "" : "s"} exist and share this link to see all of them: ${link.url}`
@@ -1419,20 +1375,42 @@ function buildCoverageNotes(
 
 // ─── Public API ────────────────────────────────────────────────────────────
 
-export function buildPortfolioChatContext({
-  github,
+export async function buildPortfolioChatContext({
+  github = { available: false, contributionDays: 0 },
   query,
 }: {
-  github: GitHubContributionStatus
+  github?: GitHubContributionStatus
   query: string
 }) {
-  const intent = getQueryIntent(query)
-  const corpus = createPortfolioCorpus(github, intent)
+  // ponytail: load dynamic content via LocalContentRepository to decouple from static JSON imports
+  const [user, settings, projects, experiences, techStack, socialLinks, awards, certifications, publications] =
+    await Promise.all([
+      LocalContentRepository.getProfile(),
+      LocalContentRepository.getSettings(),
+      LocalContentRepository.getProjects(),
+      LocalContentRepository.getExperiences(),
+      LocalContentRepository.getSkills(),
+      LocalContentRepository.getSocialLinks(),
+      LocalContentRepository.getAwards(),
+      LocalContentRepository.getCertifications(),
+      LocalContentRepository.getPublications(),
+    ])
 
-  // Use module-level cached IDF (computed once per server instance).
-  // The static corpus is structurally identical across requests - only the
-  // github doc changes at runtime, and its tokens don't meaningfully shift IDF.
-  const idf = getStaticIdf()
+  const portfolioData: PortfolioData = {
+    user,
+    settings,
+    projects,
+    experiences,
+    techStack,
+    socialLinks,
+    awards,
+    certifications,
+    publications,
+  }
+
+  const intent = getQueryIntent(query)
+  const corpus = createPortfolioCorpus(portfolioData, github, intent)
+  const idf = computeIdf(corpus)
 
   const ranked = rankDocuments(corpus, query, idf)
 
@@ -1446,16 +1424,13 @@ export function buildPortfolioChatContext({
     reason: "baseline",
   }))
 
-  // detailLimit controls how many detail lines per document are emitted.
-  // Rule: more context requested → more lines. wantsAll+wantsDetailed is the
-  // most expansive case and must have the highest limit.
   const detailLimit = intent.wantsAll
     ? intent.wantsDetailed
-      ? 8 // all + detailed = maximum coverage
-      : 6 // all only = medium (breadth over depth)
+      ? 8
+      : 6
     : intent.wantsDetailed
-      ? 7 // detailed only = high depth on fewer docs
-      : 5 // default
+      ? 7
+      : 5
 
   const candidates = ranked.filter((document) => !baselineIds.has(document.id))
 
@@ -1466,9 +1441,7 @@ export function buildPortfolioChatContext({
     detailLimit
   )
 
-  // Placed right after the intro line (not appended at the end) so it
-  // always survives the character-budget truncation below.
-  const coverageNotes = buildCoverageNotes(intent, selected)
+  const coverageNotes = buildCoverageNotes(intent, selected, portfolioData)
 
   const context = [
     "PORTFOLIO_CONTEXT_START",
@@ -1488,6 +1461,7 @@ export function buildPortfolioChatContext({
 
   return {
     context: boundedContext,
+    user,
     retrieved: selected.map((document) => ({
       id: document.id,
       type: document.type,

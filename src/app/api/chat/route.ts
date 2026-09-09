@@ -349,9 +349,9 @@ function isLikelyIndonesian(text: string, fallbackText = "") {
 // path bypasses the model entirely, so it rotates its own wording to avoid
 // sounding like a canned error string on repeated attempts.
 const REFUSALS_ID =
-  "Maaf, aku hanya bisa membahas portofolio Firdaus; untuk hal lain, silakan hubungi langsung lewat kontak yang tersedia."
+  "Maaf, aku hanya bisa membahas seputar portofolio dan proyek ini; untuk hal lain, silakan hubungi langsung lewat kontak yang tersedia."
 const REFUSALS_EN =
-  "Sorry, I can only discuss Firdaus's portfolio; for anything else, please use the available contact channel."
+  "Sorry, I can only discuss this portfolio and engineering projects; for anything else, please use the available contact channel."
 
 function buildOutOfScopeRefusal(message: string, fallbackText = "") {
   return isLikelyIndonesian(message, fallbackText) ? REFUSALS_ID : REFUSALS_EN
@@ -535,7 +535,7 @@ export async function POST(req: Request) {
     releaseRequest = rateLimit.release
 
     const github = await getGitHubContributionStatus(recentUserMessages)
-    const portfolioContext = buildPortfolioChatContext({
+    const portfolioContext = await buildPortfolioChatContext({
       github,
       query: recentUserMessages,
     })
@@ -548,6 +548,8 @@ export async function POST(req: Request) {
       {
         role: "system",
         content: buildPortfolioSystemPrompt({
+          displayName: portfolioContext.user.displayName,
+          jobTitle: portfolioContext.user.jobTitle,
           languageDirective,
           portfolioContext: portfolioContext.context,
         }),

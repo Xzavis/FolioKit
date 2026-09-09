@@ -235,7 +235,7 @@ export default function AdminProfilePage() {
                       alt="Cover banner preview"
                       className="size-full object-cover object-center"
                       onError={(e) => {
-                        ;(e.currentTarget as HTMLElement).style.display = "none"
+                        ; (e.currentTarget as HTMLElement).style.display = "none"
                       }}
                     />
                   )}
@@ -279,7 +279,7 @@ export default function AdminProfilePage() {
               label="Username / Handle"
               required
               error={errors.username}
-              description="Displays as @username under your name"
+              description="Displays as @username under your name and GitHub Contribution graph on the homepage"
             >
               <div className="relative flex items-center">
                 <span className="absolute left-3 text-xs font-semibold text-muted-foreground select-none">
@@ -288,7 +288,7 @@ export default function AdminProfilePage() {
                 <FormInput
                   value={profile.username}
                   onChange={(e) => handleChange("username", e.target.value.replace(/^@/, ""))}
-                  placeholder="zickrian"
+                  placeholder="yourusername"
                   error={errors.username}
                   className="pl-7"
                 />
@@ -301,7 +301,7 @@ export default function AdminProfilePage() {
               <FormInput
                 value={profile.jobTitle}
                 onChange={(e) => handleChange("jobTitle", e.target.value)}
-                placeholder="AI & Machine Learning Engineer"
+                placeholder="Full Stack Developer"
                 error={errors.jobTitle}
               />
             </FormField>
@@ -310,7 +310,7 @@ export default function AdminProfilePage() {
               <FormInput
                 value={profile.address}
                 onChange={(e) => handleChange("address", e.target.value)}
-                placeholder="Indonesia"
+                placeholder="San Francisco, CA / Remote"
               />
             </FormField>
           </div>
@@ -328,7 +328,7 @@ export default function AdminProfilePage() {
               <FormInput
                 value={profile.website}
                 onChange={(e) => handleChange("website", e.target.value)}
-                placeholder="https://www.zickrian.dev"
+                placeholder="https://example.com"
               />
             </FormField>
           </div>
@@ -350,7 +350,7 @@ export default function AdminProfilePage() {
               rows={3}
               value={profile.bio}
               onChange={(e) => handleChange("bio", e.target.value)}
-              placeholder="I'm Firdaus Khotibul Zickrian, an AI Engineer..."
+              placeholder="Hi, I'm a developer building modern web applications..."
               error={errors.bio}
             />
           </FormField>

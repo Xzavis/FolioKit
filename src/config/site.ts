@@ -2,7 +2,7 @@ import profile from "@/content/profile.json"
 import settings from "@/content/settings.json"
 import type { NavItem } from "@/types/nav"
 
-const DEFAULT_SITE_URL = "https://www.zickrian.dev"
+const DEFAULT_SITE_URL = profile.website || "http://localhost:3000"
 
 function normalizeSiteUrl(value?: string) {
   if (!value) return DEFAULT_SITE_URL
@@ -39,8 +39,8 @@ export const MAIN_NAV: NavItem[] = [
   },
 ]
 
-export const X_HANDLE = "@zickrian"
-export const GITHUB_USERNAME = "zickrian"
+export const X_HANDLE = profile.username ? `@${profile.username}` : "@yourusername"
+export const GITHUB_USERNAME = profile.username || "yourusername"
 export const UTM_PARAMS = {
-  utm_source: "zickrian",
+  utm_source: "portfolio",
 }

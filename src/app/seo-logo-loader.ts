@@ -37,11 +37,13 @@ const pngBuffer = await sharp(webpBuffer)
   .png({ compressionLevel: 9, quality: 90 })
   .toBuffer()
 
-const profileWebpBuffer = fs.readFileSync(
-  path.join(process.cwd(), "public/image/profile.webp")
-)
+const avatarFile = fs.existsSync(path.join(process.cwd(), "public/image/default-avatar.svg"))
+  ? path.join(process.cwd(), "public/image/default-avatar.svg")
+  : path.join(process.cwd(), "public/icons/seo.webp")
 
-const profilePngBuffer = await sharp(profileWebpBuffer)
+const profileAvatarBuffer = fs.readFileSync(avatarFile)
+
+const profilePngBuffer = await sharp(profileAvatarBuffer)
   .resize({ width: 256, height: 256, fit: "cover" })
   .png({ compressionLevel: 9, quality: 90 })
   .toBuffer()

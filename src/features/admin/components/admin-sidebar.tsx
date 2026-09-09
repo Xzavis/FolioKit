@@ -78,9 +78,9 @@ export function AdminSidebar({ className, onItemClick }: { className?: string; o
       <div className="flex h-14 items-center justify-between border-b border-border/80 px-4 dark:border-line">
         <Link href="/admin" className="flex items-center gap-2 font-semibold text-sm text-foreground">
           <div className="size-6 rounded-md bg-primary text-primary-foreground flex items-center justify-center font-mono text-xs font-bold">
-            Z
+            P
           </div>
-          <span className="tracking-tight">zickrian.dev</span>
+          <span className="tracking-tight">PortoCMS</span>
           <span className="rounded bg-muted px-1.5 py-0.5 text-[0.625rem] font-mono text-muted-foreground uppercase">
             Admin
           </span>
@@ -132,7 +132,7 @@ export function AdminSidebar({ className, onItemClick }: { className?: string; o
             <ExternalLinkIcon className="size-3.5" />
             Live Website
           </span>
-          <span className="text-[0.6875rem] text-muted-foreground font-mono">zickrian.dev</span>
+          <span className="text-[0.6875rem] text-muted-foreground font-mono">View Live</span>
         </Link>
         <button
           onClick={logout}

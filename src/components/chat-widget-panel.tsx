@@ -24,6 +24,7 @@ import { useChat } from "@/components/chat-provider"
 import { TextShimmer } from "@/components/core/text-shimmer"
 import { Icons } from "@/components/icons"
 import { Button } from "@/components/ui/button"
+import profileData from "@/content/profile.json"
 import { useTranslation } from "@/lib/i18n/use-translation"
 import { cn } from "@/lib/utils"
 
@@ -63,7 +64,7 @@ const RECENT_MESSAGE_LIMIT = 4
 const STREAM_TOKEN_BATCH_SIZE = 2 // 1 word + 1 space
 const STREAM_BATCH_DELAY_MS = 12
 
-const BUDGET_KEY = "zickrian_ai_budget_data"
+const BUDGET_KEY = "portocms_ai_budget_data"
 const BUDGET_LIMIT = 6000
 const BUDGET_WINDOW_MS = 60 * 60 * 1000 // 1 hour
 const BUDGET_FLUSH_MS = 400
@@ -83,7 +84,7 @@ function isValidEmail(email: string) {
 
 // ─── Per-browser Rate Limit (localStorage) ───────────────────────────────────
 
-const RATE_LIMIT_KEY = "zickrian_email_rl"
+const RATE_LIMIT_KEY = "portocms_email_rl"
 const RATE_LIMIT_MAX = 3
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000 // 1 hour
 
@@ -960,7 +961,7 @@ export function ChatWidgetPanel() {
       await new Promise((resolve) => setTimeout(resolve, 600))
 
       await injectAssistantMessage(
-        "Waktu ngobrolku sudah habis nih! Kalau masih ada pertanyaan, yuk langsung DM Zickrian lewat tombol **Direct Message** di atas! 👆"
+        "Waktu ngobrolku sudah habis nih! Kalau masih ada pertanyaan, yuk langsung hubungi lewat tombol **Direct Message** di atas! 👆"
       )
       return
     }
@@ -1091,7 +1092,7 @@ export function ChatWidgetPanel() {
             <div className="animate-in fade-in slide-in-from-bottom-2 flex w-full flex-col duration-200">
               <div className="mb-2 flex items-center justify-between">
                 <h3 className="pl-1 text-[13px] font-semibold text-foreground/90">
-                  {t.chat.sendEmailToZickrian}
+                  {t.chat.sendDirectMessage}
                 </h3>
                 <button
                   type="button"
@@ -1312,7 +1313,7 @@ export function ChatWidgetPanel() {
               onClick={() => setBudgetOpen(!budgetOpen)}
             >
               <span className="flex items-center gap-1.5 font-handwritten text-[1.15rem] tracking-wide text-foreground select-none">
-                Zickrian
+                {profileData.displayName || "Portfolio Assistant"}
                 <ChevronDownIcon
                   className={cn(
                     "size-4 text-muted-foreground transition-transform duration-200",

@@ -30,7 +30,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const saved = sessionStorage.getItem("zickrian_admin_auth")
+      const saved = sessionStorage.getItem("portocms_admin_auth")
       if (saved === "1") {
         setIsAuthenticated(true)
       }
@@ -52,9 +52,9 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const res = await verifyAdminAuthAction(passphrase.trim())
       if (res.authorized) {
-        sessionStorage.setItem("zickrian_admin_auth", "1")
+        sessionStorage.setItem("portocms_admin_auth", "1")
         setIsAuthenticated(true)
-        toastSuccess("Authenticated successfully. Welcome to Zickrian Admin!")
+        toastSuccess("Authenticated successfully. Welcome to PortoCMS Admin!")
       } else {
         setError(res.message || "Invalid credentials.")
         toastError(res.message || "Invalid credentials.")
@@ -67,7 +67,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const logout = () => {
-    sessionStorage.removeItem("zickrian_admin_auth")
+    sessionStorage.removeItem("portocms_admin_auth")
     setIsAuthenticated(false)
   }
 
@@ -87,9 +87,9 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
             <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-3">
               <LockIcon className="size-6" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-foreground">Zickrian Admin</h1>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">PortoCMS Admin</h1>
             <p className="text-xs text-muted-foreground mt-1">
-              Private Content Management for zickrian.dev
+              Local Content Management System
             </p>
           </div>
 
@@ -120,7 +120,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
           <div className="mt-4 border-t border-border/60 pt-3 text-center dark:border-line">
             <p className="text-[0.6875rem] text-muted-foreground">
-              Default dev secret: <code className="text-foreground">zickrian2026</code>
+              Default dev secret: <code className="text-foreground">admin2026</code> (or custom via ADMIN_PIN)
             </p>
           </div>
         </div>

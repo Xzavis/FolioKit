@@ -99,9 +99,13 @@ export function parseMediumRss(xml: string): MediumPost[] {
   return items
 }
 
-export async function fetchMediumPosts(): Promise<MediumPost[]> {
+// ponytail: dynamic Medium feed fetching using username parameter or env var
+export async function fetchMediumPosts(username?: string): Promise<MediumPost[]> {
+  const targetUser = username || process.env.MEDIUM_USERNAME
+  if (!targetUser) return []
   try {
-    const res = await fetch("https://medium.com/feed/@zickriann", {
+    const handle = targetUser.replace(/^@/, "")
+    const res = await fetch(`https://medium.com/feed/@${handle}`, {
       // Next.js Data Cache: revalidate every 30 min
       next: { revalidate: 1800 },
       headers: {

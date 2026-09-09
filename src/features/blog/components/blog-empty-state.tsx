@@ -2,7 +2,7 @@
 
 import { useTranslation } from "@/lib/i18n/use-translation"
 
-export function BlogEmptyState() {
+export function BlogEmptyState({ mediumUrl = "https://medium.com" }: { mediumUrl?: string }) {
   const { t } = useTranslation()
 
   return (
@@ -13,7 +13,7 @@ export function BlogEmptyState() {
       <p className="text-sm text-muted-foreground">
         {t.blog.loadErrorVisit}{" "}
         <a
-          href="https://medium.com/@zickriann"
+          href={mediumUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="underline underline-offset-2 hover:text-foreground"

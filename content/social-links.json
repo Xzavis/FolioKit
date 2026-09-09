@@ -2,21 +2,35 @@
   {
     "icon": "github",
     "title": "GitHub",
-    "href": "https://github.com/xzavis"
+    "subtitle": "@yourusername",
+    "href": "https://github.com/yourusername",
+    "visible": true
   },
   {
     "icon": "linkedin",
     "title": "LinkedIn",
-    "href": "https://linkedin.com/in/firdauskhotibulzickrian/"
+    "subtitle": "yourusername",
+    "href": "https://linkedin.com/in/yourusername",
+    "visible": true
   },
   {
-    "icon": "email",
-    "title": "Email",
-    "href": "mailto:firdauskhotibulzickrian@gmail.com"
+    "icon": "instagram",
+    "title": "Instagram",
+    "href": "gvg"
   },
   {
-    "icon": "huggingface",
-    "title": "Hugging Face",
-    "href": "https://huggingface.co/zickrian"
+    "icon": "dribbble",
+    "title": "Dribbble",
+    "href": "fchf"
+  },
+  {
+    "icon": "linkedin",
+    "title": "LinkedIn",
+    "href": "fgfgf"
+  },
+  {
+    "icon": "tiktok",
+    "title": "TikTok",
+    "href": "bvbvb"
   }
 ]

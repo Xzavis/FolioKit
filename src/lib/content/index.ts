@@ -18,7 +18,7 @@ import type {
 export { LocalContentRepository }
 
 /**
- * Server-only Content Loader for zickrian.dev
+ * Server-only Content Loader for PortoCMS
  * Reads bundled JSON content directly from /content/
  */
 export async function getProfile(): Promise<Profile> {

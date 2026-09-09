@@ -9,9 +9,13 @@ describe("decodeEmail", () => {
     )
   })
 
-  it("decodes the value stored in the USER data", () => {
-    expect(
-      decodeEmail("ZmlyZGF1c2tob3RpYnVsemlja3JpYW5AZ21haWwuY29t")
-    ).toContain("@gmail.com")
+  it("handles plain text email addresses directly", () => {
+    expect(decodeEmail("user@example.com")).toBe("user@example.com")
+  })
+
+  it("handles empty or null values gracefully", () => {
+    expect(decodeEmail("")).toBe("")
+    expect(decodeEmail(undefined)).toBe("")
+    expect(decodeEmail(null)).toBe("")
   })
 })

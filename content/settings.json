@@ -1,21 +1,23 @@
 {
-  "seoTitle": "Xza Abdul Malik Ibrahim | AI & Machine Learning Engineer",
-  "seoDescription": "I'm Xza Abdul Malik Ibrahim an AI and machine learning engineer from Indonesia. I build practical software, data products, and machine learning systems.",
+  "siteTitle": "Your Name | Portfolio",
+  "metaTitle": "Your Name | Full Stack Developer",
+  "seoTitle": "Your Name | Portfolio",
+  "seoDescription": "Modern developer portfolio and showcase built with Next.js, Tailwind CSS, and PortoCMS.",
+  "metaDescription": "Modern developer portfolio and showcase built with Next.js, Tailwind CSS, and PortoCMS.",
   "keywords": [
-    "Firdaus Khotibul Zickrian",
-    "zickrian",
-    "Firdaus Khotibul Zickrian portfolio",
-    "zickrian portfolio",
-    "AI engineer Indonesia",
-    "machine learning engineer Indonesia",
-    "AI and machine learning",
-    "full stack developer",
-    "data products",
-    "MLOps",
-    "computer vision",
-    "AI portfolio",
-    "machine learning portfolio"
+    "Developer",
+    "Portfolio",
+    "Full Stack",
+    "Web Development",
+    "Next.js",
+    "React",
+    "TypeScript"
   ],
+  "favicon": "/favicon.ico",
   "ogImage": "/image/og.png",
-  "favicon": "/favicon.ico"
+  "defaultOgImage": "/image/og.png",
+  "autoPublish": false,
+  "previewDeployment": true,
+  "githubRepo": "yourusername/portfolio",
+  "updatedAt": "2026-01-01"
 }

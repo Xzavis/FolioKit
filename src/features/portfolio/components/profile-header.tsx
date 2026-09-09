@@ -9,6 +9,7 @@ import defaultSocialLinks from "@/content/social-links.json"
 import { VerifiedIcon } from "@/features/portfolio/components/verified-icon"
 import type { Profile, SocialLink } from "@/lib/content/types"
 import { useTranslation } from "@/lib/i18n/use-translation"
+import { urlToName } from "@/utils/url"
 
 export function ProfileHeader({
   profile = profileData,
@@ -91,15 +92,17 @@ export function ProfileHeader({
             <MapPin className="size-4" aria-hidden />
             {profile.address}
           </span>
-          <a
-            href={profile.website}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
-          >
-            <Globe2 className="size-4" aria-hidden />
-            zickrian.dev
-          </a>
+          {profile.website ? (
+            <a
+              href={profile.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+            >
+              <Globe2 className="size-4" aria-hidden />
+              {urlToName(profile.website)}
+            </a>
+          ) : null}
         </div>
 
         <div className="mt-5 border-t border-line pt-4">

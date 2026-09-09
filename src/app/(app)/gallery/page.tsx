@@ -8,15 +8,14 @@ import type { GalleryItem } from "@/lib/content/types"
 import { createPageMetadata } from "@/lib/seo"
 import { cn } from "@/lib/utils"
 
-const title = "AI & Software Project Gallery"
+const title = "Project & Media Gallery"
 const description =
-  "A look at my AI projects, hackathons, technical events, and the software work behind them."
+  "A visual showcase of projects, technical events, presentations, and creative work."
 const keywords = [
-  "Firdaus Khotibul Zickrian gallery",
-  "zickrian portfolio gallery",
-  "AI project showcase",
-  "machine learning project gallery",
-  "software engineering portfolio",
+  "portfolio gallery",
+  "project showcase",
+  "software engineering gallery",
+  "developer media",
 ]
 
 export const metadata = createPageMetadata({

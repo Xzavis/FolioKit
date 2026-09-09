@@ -1,13 +1,8 @@
 {
-  "name": "firdaus-zickrian-portfolio",
-  "version": "0.1.0",
-  "description": "My personal portfolio for AI, machine learning, and full-stack development projects.",
+  "name": "portocms-portfolio-template",
+  "version": "1.0.0",
+  "description": "A clean, modern, and extensible developer portfolio template with a built-in local Git-backed CMS (PortoCMS).",
   "license": "MIT",
-  "author": {
-    "name": "Firdaus Khotibul Zickrian",
-    "email": "firdauskhotibulzickrian@gmail.com",
-    "url": "https://github.com/zickrian"
-  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

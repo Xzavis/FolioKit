@@ -88,7 +88,7 @@ export default function AdminSettingsPage() {
               <FormInput
                 value={settings.siteTitle}
                 onChange={(e) => handleChange("siteTitle", e.target.value)}
-                placeholder="Firdaus Khotibul Zickrian | Portfolio"
+                placeholder="Your Name | Portfolio"
               />
             </FormField>
 
@@ -123,7 +123,7 @@ export default function AdminSettingsPage() {
               <FormInput
                 value={settings.metaTitle}
                 onChange={(e) => handleChange("metaTitle", e.target.value)}
-                placeholder="Firdaus Khotibul Zickrian | AI Engineer"
+                placeholder="Your Name | Software Engineer"
               />
             </FormField>
 
@@ -136,7 +136,7 @@ export default function AdminSettingsPage() {
                     e.target.value.split(",").map((k) => k.trim()).filter(Boolean)
                   )
                 }
-                placeholder="AI, Machine Learning, Next.js, Portfolio"
+                placeholder="Developer, Portfolio, Full Stack, Next.js"
               />
             </FormField>
           </div>
@@ -146,7 +146,7 @@ export default function AdminSettingsPage() {
               rows={3}
               value={settings.metaDescription}
               onChange={(e) => handleChange("metaDescription", e.target.value)}
-              placeholder="Firdaus Khotibul Zickrian portfolio showcasing AI, machine learning and full-stack projects."
+              placeholder="Developer portfolio showcasing modern web applications, projects, and technical skills."
             />
           </FormField>
         </div>
@@ -189,7 +189,7 @@ export default function AdminSettingsPage() {
               </span>
               <div className="flex items-center gap-2 font-semibold text-xs text-foreground">
                 <CheckCircle2Icon className="size-3.5 text-emerald-500" />
-                <span>GitHub Repository (zickrian/portfolio)</span>
+                <span>GitHub Repository ({settings.githubRepo || "username/portfolio"})</span>
               </div>
             </div>
 

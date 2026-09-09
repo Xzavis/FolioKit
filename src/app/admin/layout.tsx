@@ -7,7 +7,7 @@ import { AdminSidebar } from "@/features/admin/components/admin-sidebar"
 import { ToastProvider } from "@/features/admin/components/admin-toast"
 
 export const metadata: Metadata = {
-  title: "Admin Dashboard | zickrian.dev",
+  title: "PortoCMS Admin",
   robots: {
     index: false,
     follow: false,

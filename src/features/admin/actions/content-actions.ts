@@ -436,7 +436,7 @@ export async function importMediumFeedAction(): Promise<{ success: boolean; mess
 
 // Admin Security Check
 export async function verifyAdminAuthAction(password: string): Promise<{ authorized: boolean; message?: string }> {
-  const adminSecret = process.env.ADMIN_PASSWORD || process.env.ADMIN_PIN || "zickrian2026"
+  const adminSecret = process.env.ADMIN_PASSWORD || process.env.ADMIN_PIN || "admin2026"
   if (password === adminSecret) {
     return { authorized: true }
   }

@@ -5,15 +5,14 @@ import { getProjects } from "@/lib/content"
 import type { Project } from "@/lib/content/types"
 import { createPageMetadata } from "@/lib/seo"
 
-const title = "AI & Machine Learning Projects"
+const title = "Projects Showcase"
 const description =
-  "A selection of projects I've built across AI, machine learning, data, and full-stack development."
+  "A selection of software engineering, web development, and open-source projects."
 const keywords = [
-  "Firdaus Khotibul Zickrian projects",
-  "zickrian projects",
-  "AI projects",
-  "machine learning projects",
-  "full-stack development projects",
+  "portfolio projects",
+  "software engineering projects",
+  "web development projects",
+  "full-stack projects",
 ]
 
 function getProjectsJsonLd(projects: Project[]) {

@@ -60,10 +60,10 @@ export function ProjectForm({ initialData, isNew = false }: ProjectFormProps) {
     seoDescription: initialData?.seoDescription || "",
     year: initialData?.year || "2026",
     period: initialData?.period || { start: "2026" },
-    image: initialData?.image || "/image/projects/custora.webp",
-    link: initialData?.link || "https://github.com/zickrian",
+    image: initialData?.image || "/banner.webp",
+    link: initialData?.link || "",
     links: {
-      repo: initialData?.links?.repo || "https://github.com/zickrian",
+      repo: initialData?.links?.repo || "",
       live: initialData?.links?.live || "",
     },
     skills: initialData?.skills || ["Python", "Next.js", "PyTorch"],
@@ -668,7 +668,7 @@ export function ProjectForm({ initialData, isNew = false }: ProjectFormProps) {
                   onChange={(e) =>
                     handleChange("links", { ...project.links, repo: e.target.value })
                   }
-                  placeholder="https://github.com/zickrian/project"
+                  placeholder="https://github.com/yourusername/project"
                 />
               </FormField>
 
@@ -678,7 +678,7 @@ export function ProjectForm({ initialData, isNew = false }: ProjectFormProps) {
                   onChange={(e) =>
                     handleChange("links", { ...project.links, live: e.target.value })
                   }
-                  placeholder="https://demo.zickrian.dev"
+                  placeholder="https://demo.example.com"
                 />
               </FormField>
             </div>

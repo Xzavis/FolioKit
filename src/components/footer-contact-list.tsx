@@ -132,7 +132,7 @@ function GitHubCard({
   data: GitHubSocialCard | null
   icon: React.ReactNode
 }) {
-  if (!data) return <PlainCard handle="@zickrian" icon={icon} />
+  if (!data) return <PlainCard handle={profile.username ? `@${profile.username}` : "@yourusername"} icon={icon} />
 
   const width = data.weeks * (BLOCK + GAP) - GAP
   const height = ROWS * (BLOCK + GAP) - GAP

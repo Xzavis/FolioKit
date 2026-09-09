@@ -402,7 +402,7 @@ export default function AdminBlogPage() {
               <FormInput
                 value={editing.link || ""}
                 onChange={(e) => setEditing({ ...editing, link: e.target.value })}
-                placeholder="https://medium.com/@zickriann/my-article-123"
+                placeholder="https://medium.com/@username/my-article-123"
               />
             </FormField>
 

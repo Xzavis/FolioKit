@@ -34,8 +34,8 @@ export async function generateMetadata({
     project.title,
     project.category,
     ...project.skills,
-    "Firdaus Khotibul Zickrian",
-    "zickrian",
+    profile.displayName,
+    profile.username,
   ]
 
   return {
@@ -100,7 +100,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         image: imageUrl,
         applicationCategory: project.category,
         operatingSystem: "Web",
-        dateCreated: project.period.start,
+        dateCreated: project.period?.start ?? "2026",
         keywords: project.skills,
         programmingLanguage: project.skills,
         sameAs,

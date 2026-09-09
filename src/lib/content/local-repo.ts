@@ -32,33 +32,8 @@ const CONTENT_DIR = path.join(process.cwd(), "content")
 const PROJECTS_DIR = path.join(CONTENT_DIR, "projects")
 const EXPERIENCES_DIR = path.join(CONTENT_DIR, "experiences")
 
-// Canonical project ordering to preserve showcase sequence
-const PROJECT_ORDER = [
-  "naratioai",
-  "custora",
-  "base-realms",
-  "leadsup",
-  "qmeal",
-  "polsekrembang",
-  "brazilian-ecommerce-dashboard",
-  "financial-assistant-bot",
-  "machine-learning-system",
-  "lostandfound",
-  "floodsegmen",
-  "diabetes-classification",
-  "imageclas",
-]
+// ponytail: dynamic content repository with zero hardcoded project/experience lists
 
-// Canonical experience ordering
-const EXPERIENCE_ORDER = [
-  "custompedia",
-  "pijak-ibm",
-  "dinus-lab-assistant",
-  "asah-dicoding-accenture",
-  "blockvizo",
-  "gdgoc-dinus",
-  "education",
-]
 
 async function ensureDir(dirPath: string): Promise<void> {
   try {
@@ -231,7 +206,7 @@ export const localRepo = {
       keywords: settings.keywords || [],
       autoPublish: false,
       previewDeployment: true,
-      githubRepo: "zickrian/portfolio",
+      githubRepo: "yourusername/portfolio",
     }
   },
 
@@ -256,14 +231,15 @@ export const localRepo = {
       const files = await fs.readdir(PROJECTS_DIR)
       const jsonFiles = files.filter((f) => f.endsWith(".json") && f !== "order.json")
 
-      let orderList: string[] = PROJECT_ORDER
+      // ponytail: read order from order.json or fall back to natural sorting
+      let orderList: string[] = []
       try {
         const orderData = await readJsonFile<string[]>(path.join(PROJECTS_DIR, "order.json"))
         if (Array.isArray(orderData) && orderData.length > 0) {
           orderList = orderData
         }
       } catch {
-        // fallback to default PROJECT_ORDER
+        // no order.json file
       }
 
       const projects = await Promise.all(
@@ -280,12 +256,14 @@ export const localRepo = {
 
       // Maintain dynamic persisted ordering
       return validProjects.sort((a, b) => {
-        const aIndex = orderList.indexOf(a.id)
-        const bIndex = orderList.indexOf(b.id)
-        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
-        if (aIndex !== -1) return -1
-        if (bIndex !== -1) return 1
-        return 0
+        if (orderList.length > 0) {
+          const aIndex = orderList.indexOf(a.id)
+          const bIndex = orderList.indexOf(b.id)
+          if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+          if (aIndex !== -1) return -1
+          if (bIndex !== -1) return 1
+        }
+        return a.title.localeCompare(b.title)
       })
     } catch {
       return []
@@ -361,8 +339,8 @@ export const localRepo = {
       logo: project.logo,
       videoEmbed: project.videoEmbed,
       period: project.period || { start: String(new Date().getFullYear()) },
-      link: project.link || "https://github.com/zickrian",
-      links: project.links || { repo: project.link, live: "" },
+      link: project.link || "",
+      links: project.links || { repo: project.link || "", live: "" },
       skills: project.skills || [],
       coverSkills: project.coverSkills || [],
       features: project.features || [],
@@ -435,14 +413,15 @@ export const localRepo = {
       const files = await fs.readdir(EXPERIENCES_DIR)
       const jsonFiles = files.filter((f) => f.endsWith(".json") && f !== "order.json")
 
-      let orderList: string[] = EXPERIENCE_ORDER
+      // ponytail: read order from order.json or fall back to natural sorting
+      let orderList: string[] = []
       try {
         const orderData = await readJsonFile<string[]>(path.join(EXPERIENCES_DIR, "order.json"))
         if (Array.isArray(orderData) && orderData.length > 0) {
           orderList = orderData
         }
       } catch {
-        // fallback to default EXPERIENCE_ORDER
+        // no order.json file
       }
 
       const experiences = await Promise.all(
@@ -459,11 +438,13 @@ export const localRepo = {
 
       // Maintain dynamic persisted ordering
       return validExperiences.sort((a, b) => {
-        const aIndex = orderList.indexOf(a.id)
-        const bIndex = orderList.indexOf(b.id)
-        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
-        if (aIndex !== -1) return -1
-        if (bIndex !== -1) return 1
+        if (orderList.length > 0) {
+          const aIndex = orderList.indexOf(a.id)
+          const bIndex = orderList.indexOf(b.id)
+          if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+          if (aIndex !== -1) return -1
+          if (bIndex !== -1) return 1
+        }
         return 0
       })
     } catch {
@@ -513,7 +494,7 @@ export const localRepo = {
     const cleanExperience: Experience = {
       id: slug,
       companyName: experience.companyName,
-      companyLogo: experience.companyLogo || "/logos/custompedia.webp",
+      companyLogo: experience.companyLogo || "",
       companyWebsite: experience.companyWebsite || "",
       positions: experience.positions.map((pos, idx) => ({
         id: pos.id || `${slug}-${idx + 1}`,

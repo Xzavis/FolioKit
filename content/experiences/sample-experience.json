@@ -1,0 +1,26 @@
+{
+  "id": "sample-experience",
+  "companyName": "Tech Company Inc.",
+  "companyWebsite": "https://example.com",
+  "isCurrentEmployer": true,
+  "positions": [
+    {
+      "id": "software-engineer",
+      "title": "Software Engineer",
+      "employmentPeriod": {
+        "start": "2024"
+      },
+      "employmentType": "Full-time",
+      "description": "Architected and developed high-performance web applications using Next.js and TypeScript.",
+      "descriptionId": "Merancang dan membangun aplikasi web berkinerja tinggi menggunakan Next.js dan TypeScript.",
+      "skills": [
+        "TypeScript",
+        "Next.js",
+        "React",
+        "Node.js",
+        "Tailwind CSS"
+      ],
+      "isExpanded": true
+    }
+  ]
+}
