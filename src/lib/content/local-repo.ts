@@ -5,11 +5,13 @@ import path from "node:path"
 
 import { normalizeTechName } from "@/config/technology-catalog"
 import type {
+  AdminEducation,
   AdminExperience,
   AdminProfile,
   AdminProject,
   AdminSkill,
   AdminSocialLink,
+  ContentStatus,
   SiteSettings as AdminSiteSettings,
 } from "@/features/admin/types/admin"
 import { validateImageUrl } from "@/lib/media/image-url"
@@ -18,6 +20,7 @@ import type {
   Award,
   BlogPost,
   Certification,
+  Education,
   Experience,
   GalleryItem,
   Profile,
@@ -31,6 +34,7 @@ import type {
 const CONTENT_DIR = path.join(process.cwd(), "content")
 const PROJECTS_DIR = path.join(CONTENT_DIR, "projects")
 const EXPERIENCES_DIR = path.join(CONTENT_DIR, "experiences")
+const EDUCATION_DIR = path.join(CONTENT_DIR, "education")
 
 // ponytail: dynamic content repository with zero hardcoded project/experience lists
 
@@ -225,7 +229,7 @@ export const localRepo = {
 
   // ─── Projects ──────────────────────────────────────────────────────────────
 
-  async getProjects(): Promise<Project[]> {
+  async getAllProjects(): Promise<Project[]> {
     try {
       await ensureDir(PROJECTS_DIR)
       const files = await fs.readdir(PROJECTS_DIR)
@@ -270,13 +274,20 @@ export const localRepo = {
     }
   },
 
+  async getProjects(): Promise<Project[]> {
+    const all = await this.getAllProjects()
+    return all.filter((p) => !p.status || p.status === "published")
+  },
+
   async getAdminProjects(): Promise<AdminProject[]> {
-    const projects = await this.getProjects()
+    const projects = await this.getAllProjects()
     return projects.map((project, idx) => ({
       ...project,
-      status: "published",
-      displayOrder: idx + 1,
-      updatedAt: new Date(Date.now() - idx * 86400000).toISOString(),
+      status: (project.status as ContentStatus) || "published",
+      displayOrder: project.displayOrder ?? idx + 1,
+      updatedAt:
+        (project as AdminProject).updatedAt ||
+        new Date(Date.now() - idx * 86400000).toISOString(),
     }))
   },
 
@@ -326,7 +337,7 @@ export const localRepo = {
       }
     }
 
-    const cleanProject: Project = {
+    const cleanProject: Project & { status?: ContentStatus; displayOrder?: number; updatedAt?: string } = {
       id: slug,
       title: project.title,
       category: project.category || "AI / Full Stack",
@@ -361,6 +372,10 @@ export const localRepo = {
       badge: project.badge,
       badgeId: project.badgeId,
       gallery: project.gallery || [],
+      status: (project as AdminProject).status || "published",
+      featured: (project as AdminProject).featured ?? true,
+      displayOrder: (project as AdminProject).displayOrder ?? 1,
+      updatedAt: (project as AdminProject).updatedAt || new Date().toISOString(),
     }
 
     const filePath = path.join(PROJECTS_DIR, `${slug}.json`)
@@ -551,6 +566,151 @@ export const localRepo = {
     }
   },
 
+  // ─── Education ─────────────────────────────────────────────────────────────
+
+  async getEducations(): Promise<Education[]> {
+    try {
+      await ensureDir(EDUCATION_DIR)
+      const files = await fs.readdir(EDUCATION_DIR)
+      const jsonFiles = files.filter((f) => f.endsWith(".json") && f !== "order.json")
+
+      let orderList: string[] = []
+      try {
+        const orderData = await readJsonFile<string[]>(path.join(EDUCATION_DIR, "order.json"))
+        if (Array.isArray(orderData) && orderData.length > 0) {
+          orderList = orderData
+        }
+      } catch {
+        // no order.json file
+      }
+
+      const educations = await Promise.all(
+        jsonFiles.map(async (file) => {
+          try {
+            return await readJsonFile<Education>(path.join(EDUCATION_DIR, file))
+          } catch {
+            return null
+          }
+        })
+      )
+
+      const validEducations = educations.filter((e): e is Education => e !== null)
+
+      return validEducations.sort((a, b) => {
+        if (orderList.length > 0) {
+          const aIndex = orderList.indexOf(a.id)
+          const bIndex = orderList.indexOf(b.id)
+          if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+          if (aIndex !== -1) return -1
+          if (bIndex !== -1) return 1
+        }
+        return 0
+      })
+    } catch {
+      return []
+    }
+  },
+
+  async getAdminEducations(): Promise<AdminEducation[]> {
+    const educations = await this.getEducations()
+    return educations.map((edu, idx) => ({
+      ...edu,
+      status: "published",
+      displayOrder: idx + 1,
+      updatedAt: new Date(Date.now() - idx * 172800000).toISOString(),
+    }))
+  },
+
+  async reorderEducations(
+    orderedEducationsOrIds: (AdminEducation | Education)[] | string[]
+  ): Promise<AdminEducation[]> {
+    const ids = orderedEducationsOrIds.map((item) => (typeof item === "string" ? item : item.id))
+    await writeJsonFile(path.join(EDUCATION_DIR, "order.json"), ids)
+    return await this.getAdminEducations()
+  },
+
+  async getEducationById(id: string): Promise<Education | null> {
+    try {
+      const slug = normalizeSlug(id)
+      const filePath = path.join(EDUCATION_DIR, `${slug}.json`)
+      return await readJsonFile<Education>(filePath)
+    } catch {
+      return null
+    }
+  },
+
+  async saveEducation(education: AdminEducation | Education): Promise<{ id: string }> {
+    const slug = normalizeSlug(education.id || education.schoolName)
+    if (!slug) {
+      throw new Error("Education ID or school name is required.")
+    }
+
+    if (education.schoolLogo) {
+      const logoCheck = validateImageUrl(education.schoolLogo)
+      if (!logoCheck.isValid) {
+        throw new Error(`School logo image error: ${logoCheck.error}`)
+      }
+    }
+
+    const cleanEducation: Education = {
+      id: slug,
+      schoolName: education.schoolName,
+      schoolLogo: education.schoolLogo || "",
+      schoolWebsite: education.schoolWebsite || "",
+      degrees: (education.degrees || []).map((deg, idx) => ({
+        id: deg.id || `${slug}-${idx + 1}`,
+        title: deg.title,
+        period: deg.period,
+        degreeType: deg.degreeType || "Bachelor's Degree",
+        icon: typeof deg.icon === "string" ? deg.icon : "graduation-cap",
+        description: deg.description || "",
+        descriptionId: deg.descriptionId,
+        skills: deg.skills || [],
+      })),
+      isCurrent: education.isCurrent ?? false,
+    }
+
+    const filePath = path.join(EDUCATION_DIR, `${slug}.json`)
+    await writeJsonFile(filePath, cleanEducation)
+
+    try {
+      const orderFile = path.join(EDUCATION_DIR, "order.json")
+      const order = await readJsonFile<string[]>(orderFile)
+      if (Array.isArray(order) && !order.includes(slug)) {
+        order.unshift(slug)
+        await writeJsonFile(orderFile, order)
+      }
+    } catch {
+      await writeJsonFile(path.join(EDUCATION_DIR, "order.json"), [slug])
+    }
+
+    return { id: slug }
+  },
+
+  async deleteEducation(id: string): Promise<void> {
+    const slug = normalizeSlug(id)
+    const filePath = path.join(EDUCATION_DIR, `${slug}.json`)
+    try {
+      await fs.unlink(filePath)
+    } catch (err: unknown) {
+      const nodeErr = err as { code?: string }
+      if (nodeErr.code !== "ENOENT") {
+        throw err
+      }
+    }
+
+    try {
+      const orderFile = path.join(EDUCATION_DIR, "order.json")
+      let order = await readJsonFile<string[]>(orderFile)
+      if (Array.isArray(order)) {
+        order = order.filter((item) => item !== slug)
+        await writeJsonFile(orderFile, order)
+      }
+    } catch {
+      // ignore
+    }
+  },
+
   // ─── Skills ────────────────────────────────────────────────────────────────
 
   async getSkills(): Promise<TechStack[]> {
@@ -653,21 +813,30 @@ export const localRepo = {
 
   async getAdminSocialLinks(): Promise<AdminSocialLink[]> {
     const links = await this.getSocialLinks()
-    return links.map((link, idx) => ({
-      id: normalizeSlug(link.title),
-      platform: (link.title as AdminSocialLink["platform"]) || "Other",
-      label: link.title,
-      url: link.href,
-      icon: typeof link.icon === "string" ? link.icon : normalizeSlug(link.title),
-      displayOrder: idx + 1,
-      // Read persisted visible flag; default to true if field is absent
-      visible: link.visible !== false,
-    }))
+    const seenSlugs = new Set<string>()
+    return links.map((link, idx) => {
+      let slug = normalizeSlug(link.title || (typeof link.icon === "string" ? link.icon : "") || `link-${idx}`)
+      if (seenSlugs.has(slug)) {
+        slug = `${slug}-${idx}`
+      }
+      seenSlugs.add(slug)
+      return {
+        id: slug,
+        platform: (link.title as AdminSocialLink["platform"]) || "Other",
+        label: link.title,
+        url: link.href,
+        icon: typeof link.icon === "string" ? link.icon : normalizeSlug(link.title),
+        displayOrder: idx + 1,
+        // Read persisted visible flag; default to true if field is absent
+        visible: link.visible !== false,
+      }
+    })
   },
 
   async saveSocialLink(link: AdminSocialLink): Promise<void> {
     const links = await this.getSocialLinks()
-    const id = normalizeSlug(link.id || link.label || link.platform)
+    const targetPlatformSlug = normalizeSlug(link.platform || link.label)
+    const originalSlug = link.id ? normalizeSlug(link.id) : ""
 
     const updatedLink: SocialLink = {
       icon: link.icon || link.platform.toLowerCase(),
@@ -677,9 +846,26 @@ export const localRepo = {
       ...(link.visible === false ? { visible: false } : {}),
     }
 
-    const existingIdx = links.findIndex(
-      (l) => normalizeSlug(l.title) === id || l.href === link.url
+    // Match existing link being edited: either by original ID/slug or matching title
+    const existingIdx = links.findIndex((l) => {
+      const lSlug = normalizeSlug(l.title)
+      return (
+        (originalSlug && (lSlug === originalSlug || originalSlug.startsWith(`${lSlug}-`))) ||
+        lSlug === targetPlatformSlug
+      )
+    })
+
+    // Validate duplicate: prevent adding more than one link of the same platform
+    const duplicateIdx = links.findIndex(
+      (l, idx) =>
+        normalizeSlug(l.title) === targetPlatformSlug &&
+        (existingIdx >= 0 ? idx !== existingIdx : true)
     )
+    if (duplicateIdx >= 0) {
+      throw new Error(
+        `Platform "${link.platform}" sudah terdaftar. Setiap platform hanya dapat ditambahkan 1 link.`
+      )
+    }
 
     if (existingIdx >= 0) {
       links[existingIdx] = updatedLink
@@ -710,7 +896,10 @@ export const localRepo = {
   async deleteSocialLink(id: string): Promise<void> {
     const links = await this.getSocialLinks()
     const targetSlug = normalizeSlug(id)
-    const filtered = links.filter((l) => normalizeSlug(l.title) !== targetSlug)
+    const filtered = links.filter((l, idx) => {
+      const slug = normalizeSlug(l.title)
+      return slug !== targetSlug && `${slug}-${idx}` !== targetSlug
+    })
     await writeJsonFile(path.join(CONTENT_DIR, "social-links.json"), filtered)
   },
 

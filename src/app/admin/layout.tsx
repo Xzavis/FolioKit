@@ -1,13 +1,22 @@
 import type { Metadata } from "next"
+import { Press_Start_2P } from "next/font/google"
 import React from "react"
 
 import { AdminAuthProvider } from "@/features/admin/components/admin-auth-guard"
 import { AdminMobileNav } from "@/features/admin/components/admin-mobile-nav"
 import { AdminSidebar } from "@/features/admin/components/admin-sidebar"
 import { ToastProvider } from "@/features/admin/components/admin-toast"
+import { cn } from "@/lib/utils"
+
+const pressStart2P = Press_Start_2P({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-press-start-2p",
+  display: "swap",
+})
 
 export const metadata: Metadata = {
-  title: "PortoCMS Admin",
+  title: "FolioKit | Admin",
   robots: {
     index: false,
     follow: false,
@@ -18,7 +27,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <ToastProvider>
       <AdminAuthProvider>
-        <div className="flex min-h-screen bg-background text-foreground selection:bg-primary/20">
+        <div
+          className={cn(
+            "flex min-h-screen bg-background text-foreground selection:bg-primary/20",
+            pressStart2P.variable
+          )}
+        >
           {/* Desktop Sidebar (Left) */}
           <div className="hidden md:flex md:w-64 md:shrink-0">
             <AdminSidebar className="fixed inset-y-0 w-64" />

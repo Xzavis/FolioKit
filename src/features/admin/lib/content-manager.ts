@@ -6,6 +6,7 @@ import type {
   AdminAward,
   AdminBlogPost,
   AdminCertification,
+  AdminEducation,
   AdminExperience,
   AdminGalleryItem,
   AdminProfile,
@@ -13,6 +14,7 @@ import type {
   AdminPublication,
   AdminSkill,
   AdminSocialLink,
+  ContentStatus,
   DashboardMetrics,
   RecentChange,
   SiteSettings,
@@ -58,18 +60,25 @@ export async function getAdminProjectById(id: string): Promise<AdminProject | nu
   const project = await LocalContentRepository.getProjectById(id)
   if (!project) return null
   const all = await LocalContentRepository.getAdminProjects()
+  const found = all.find((p) => p.id === project.id)
   const idx = all.findIndex((p) => p.id === project.id)
   return {
     ...project,
-    status: ((project as AdminProject).status) || "published",
-    displayOrder: idx >= 0 ? idx + 1 : undefined,
-    updatedAt: (project as AdminProject).updatedAt,
+    status: (project.status as ContentStatus) || found?.status || "published",
+    featured: project.featured ?? found?.featured ?? true,
+    displayOrder: project.displayOrder ?? found?.displayOrder ?? (idx >= 0 ? idx + 1 : 1),
+    updatedAt: (project as AdminProject).updatedAt || found?.updatedAt,
   }
 }
 
 // Experience
 export async function getAdminExperiences(): Promise<AdminExperience[]> {
   return LocalContentRepository.getAdminExperiences()
+}
+
+// Education
+export async function getAdminEducations(): Promise<AdminEducation[]> {
+  return LocalContentRepository.getAdminEducations()
 }
 
 // Skills
@@ -118,9 +127,10 @@ export async function getAdminPublications(): Promise<AdminPublication[]> {
 
 // Dashboard
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
-  const [projects, experiences, skills, awards, certifications, publications, initialBlogPosts, galleryItems] = await Promise.all([
+  const [projects, experiences, educations, skills, awards, certifications, publications, initialBlogPosts, galleryItems] = await Promise.all([
     LocalContentRepository.getAdminProjects(),
     LocalContentRepository.getAdminExperiences(),
+    LocalContentRepository.getAdminEducations(),
     LocalContentRepository.getAdminSkills(),
     LocalContentRepository.getAwards(),
     LocalContentRepository.getCertifications(),
@@ -144,9 +154,35 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     projects.filter((p: { status?: string }) => p.status === "draft").length +
     blogPosts.filter((b) => b.status === "draft").length
 
+  let activity = _sessionActivity
+  if (activity.length === 0) {
+    const fallback: RecentChange[] = []
+    const sortedProjects = [...projects].sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""))
+    for (const p of sortedProjects.slice(0, 3)) {
+      fallback.push({
+        id: `proj-${p.id}`,
+        title: p.title,
+        type: "Project",
+        status: (p.status as ContentStatus) || "published",
+        updatedAt: p.updatedAt || new Date().toISOString(),
+        editUrl: `/admin/projects/${p.id}`,
+      })
+    }
+    fallback.push({
+      id: "prof-identity",
+      title: "Profile Information",
+      type: "Profile",
+      status: "published",
+      updatedAt: new Date().toISOString(),
+      editUrl: "/admin/profile",
+    })
+    activity = fallback
+  }
+
   return {
     projectsCount: projects.length,
     experienceCount: experiences.length,
+    educationCount: educations.length,
     skillsCount: skills.length,
     draftsCount: drafts,
     awardsCount: awards.length,
@@ -154,7 +190,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     publicationsCount: publications.length,
     blogCount: blogPosts.length,
     galleryCount: galleryItems.length,
-    recentActivity: _sessionActivity,
+    recentActivity: activity,
   }
 }
 
@@ -192,6 +228,29 @@ export async function reorderExperiencesData(experiences: AdminExperience[]): Pr
     const msg = err instanceof Error ? err.message : "Failed to reorder experiences."
     return { success: false, message: msg }
   }
+}
+
+export async function saveEducationData(education: AdminEducation): Promise<{ success: boolean; message: string }> {
+  const result = await LocalContentRepository.saveEducation(education)
+  recordRecentActivity(result.id, education.schoolName, "Education", "published", "/admin/education")
+  return { success: true, message: "Education saved successfully." }
+}
+
+export async function reorderEducationsData(educations: AdminEducation[]): Promise<{ success: boolean; message: string; data?: AdminEducation[] }> {
+  try {
+    const updated = await LocalContentRepository.reorderEducations(educations)
+    recordRecentActivity("education-reorder", "Reordered Education", "Education", "published", "/admin/education")
+    return { success: true, message: "Education order saved successfully.", data: updated }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to reorder education."
+    return { success: false, message: msg }
+  }
+}
+
+export async function deleteEducationData(id: string): Promise<{ success: boolean; message: string }> {
+  await LocalContentRepository.deleteEducation(id)
+  _sessionActivity = _sessionActivity.filter((c) => c.editUrl !== `/admin/education`)
+  return { success: true, message: "Education deleted successfully." }
 }
 
 export async function reorderProjectsData(projects: AdminProject[]): Promise<{ success: boolean; message: string; data?: AdminProject[] }> {
@@ -249,14 +308,24 @@ export async function deleteSkillData(id: string): Promise<{ success: boolean; m
 }
 
 export async function saveSocialLinkData(link: AdminSocialLink): Promise<{ success: boolean; message: string }> {
-  await LocalContentRepository.saveSocialLink(link)
-  recordRecentActivity(link.id, link.label, "Social Link", "published", "/admin/social-links")
-  return { success: true, message: "Social link saved successfully." }
+  try {
+    await LocalContentRepository.saveSocialLink(link)
+    recordRecentActivity(link.id, link.label, "Social Link", "published", "/admin/social-links")
+    return { success: true, message: "Social link saved successfully." }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to save social link."
+    return { success: false, message: msg }
+  }
 }
 
 export async function deleteSocialLinkData(id: string): Promise<{ success: boolean; message: string }> {
-  await LocalContentRepository.deleteSocialLink(id)
-  return { success: true, message: "Social link deleted successfully." }
+  try {
+    await LocalContentRepository.deleteSocialLink(id)
+    return { success: true, message: "Social link deleted successfully." }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to delete social link."
+    return { success: false, message: msg }
+  }
 }
 
 export async function saveSettingsData(settings: SiteSettings): Promise<{ success: boolean; message: string }> {

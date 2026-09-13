@@ -5,6 +5,7 @@ import type {
   Award,
   BlogPost,
   Certification,
+  Education,
   Experience,
   GalleryItem,
   Profile,
@@ -40,6 +41,15 @@ export async function getProjectById(slug: string): Promise<Project | undefined>
 
 export async function getExperiences(): Promise<Experience[]> {
   return LocalContentRepository.getExperiences()
+}
+
+export async function getEducations(): Promise<Education[]> {
+  return LocalContentRepository.getEducations()
+}
+
+export async function getEducationById(slug: string): Promise<Education | undefined> {
+  const education = await LocalContentRepository.getEducationById(slug)
+  return education ?? undefined
 }
 
 export async function getSkills(): Promise<TechStack[]> {

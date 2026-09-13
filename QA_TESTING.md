@@ -174,11 +174,22 @@ Gunakan dokumen ini untuk mencatat hasil pengetesan manual (manual testing) maup
 - [ ] **Hapus Proyek:** Konfirmasi dialog hapus bekerja dan menghapus file JSON terkait.
 
 #### B.5 Manajemen Pengalaman Kerja (`/admin/experience`)
-- [ ] **Tambah & Edit Pengalaman:** Input nama perusahaan, website, lokasi, periode kerja.
-- [ ] **Upload Logo Perusahaan:** Mengunggah logo langsung ke target folder `public/logos/`.
-- [ ] **Peran Bersarang (Nested Roles):** Menambah lebih dari 1 posisi dalam 1 riwayat perusahaan.
-- [ ] **Skill Tagging:** Memilih atau mengetik tag keahlian untuk setiap peran.
-- [ ] **Reorder & Hapus Pengalaman:** Urutan pengalaman kerja tersimpan di `content/experiences/order.json`.
+- [x] **Tambah & Edit Pengalaman:** Input nama perusahaan, website, lokasi, periode kerja.
+- [x] **Upload Logo Perusahaan:** Mengunggah logo langsung ke target folder `public/logos/`.
+- [x] **Peran Bersarang (Nested Roles):** Menambah lebih dari 1 posisi dalam 1 riwayat perusahaan.
+- [x] **Skill Tagging:** Memilih atau mengetik tag keahlian untuk setiap peran.
+- [x] **Opsi Ikon Profesional:** Menampilkan pilihan ikon khusus dunia kerja (Briefcase, AI, Code, Laptop, Network, Data, Users, Rocket, Building, Lab) terpisah dari ikon edukasi.
+- [x] **Reorder & Hapus Pengalaman:** Urutan pengalaman kerja tersimpan di `content/experiences/order.json`.
+
+#### B.5b Manajemen Riwayat Pendidikan (`/admin/education`)
+- [x] **Navigasi Sidebar Baru:** Menu "Education" dengan ikon `GraduationCap` di kelompok MANAGEMENT sidebar admin.
+- [x] **Tambah & Edit Pendidikan:** Input nama institusi/universitas, gelar/jurusan, tipe program (Sarjana, Magister, dll.), website institusi, periode studi.
+- [x] **Upload Logo Institusi:** Upload logo atau pilih preset institusi (Udinus, Dicoding, Coursera, IBM, Asah, dll.).
+- [x] **Opsi Ikon Akademik:** Pilihan ikon terfokus pada ranah akademik (Graduation Cap, School, Book Open, Library, Award, Medal, Scroll, Code/Bootcamp, Research/Lab).
+- [x] **Coursework & Skill Badges:** Tagging mata kuliah dan kompetensi relevan.
+- [x] **Toggle Sedang Studi:** Switch "Currently Studying Here" otomatis menampilkan durasi dan status "Present".
+- [x] **Reorder & Hapus:** Urutan tersimpan di `content/education/order.json` dan delete dialog konfirmasi aman.
+- [x] **Integrasi Halaman Utama:** Data pendidikan otomatis ter-render di panel `Education` di homepage publik lengkap dengan dukungan dwibahasa (EN & ID).
 
 #### B.6 Manajemen Keahlian (`/admin/skills`)
 - [ ] **Tambah Skill Baru:** Menambahkan skill dari katalog atau kustom.

@@ -92,21 +92,19 @@ export default function AdminSettingsPage() {
               />
             </FormField>
 
-            <FormField label="Favicon Path" description="Unggah atau ketik path favicon (.ico, .png, .svg)">
+            <FormField label="Favicon" description="Unggah file favicon (.ico, .png, .svg) atau pilih dari galeri">
               <FormMediaUpload
                 value={settings.favicon}
                 onChange={(val) => handleChange("favicon", val)}
-                placeholder="/favicon.ico"
                 accept="image/*"
               />
             </FormField>
           </div>
 
-          <FormField label="Default OG Image URL" description="Unggah atau ketik gambar social card untuk Twitter dan Open Graph">
+          <FormField label="Default OG Image" description="Unggah gambar social card untuk Twitter dan Open Graph atau pilih dari galeri">
             <FormMediaUpload
               value={settings.defaultOgImage || ""}
               onChange={(val) => handleChange("defaultOgImage", val)}
-              placeholder="/image/og.png"
               accept="image/*"
             />
           </FormField>

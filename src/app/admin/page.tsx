@@ -8,6 +8,7 @@ import {
   CpuIcon,
   FileEditIcon,
   FolderGit2Icon,
+  GraduationCapIcon,
   PlusIcon,
   SparklesIcon,
   UserIcon,
@@ -40,7 +41,7 @@ export default function AdminOverviewPage() {
       />
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 sm:gap-4">
         <div className="rounded-xl border border-border/80 bg-card p-4 sm:p-5 dark:border-line">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">Projects</span>
@@ -65,6 +66,17 @@ export default function AdminOverviewPage() {
 
         <div className="rounded-xl border border-border/80 bg-card p-4 sm:p-5 dark:border-line">
           <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground">Education</span>
+            <GraduationCapIcon className="size-4 text-primary" />
+          </div>
+          <div className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            {loading ? "..." : metrics?.educationCount}
+          </div>
+          <p className="mt-1 text-[0.6875rem] text-muted-foreground">Degrees & academies</p>
+        </div>
+
+        <div className="rounded-xl border border-border/80 bg-card p-4 sm:p-5 dark:border-line">
+          <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">Skills</span>
             <CpuIcon className="size-4 text-primary" />
           </div>
@@ -74,7 +86,7 @@ export default function AdminOverviewPage() {
           <p className="mt-1 text-[0.6875rem] text-muted-foreground">Tech & frameworks</p>
         </div>
 
-        <div className="rounded-xl border border-border/80 bg-card p-4 sm:p-5 dark:border-line">
+        <div className="rounded-xl border border-border/80 bg-card p-4 sm:p-5 dark:border-line col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">Drafts</span>
             <FileEditIcon className="size-4 text-amber-500" />
@@ -99,7 +111,12 @@ export default function AdminOverviewPage() {
           </Link>
           <Link href="/admin/experience">
             <Button variant="outline" size="sm" className="gap-1.5">
-              <PlusIcon className="size-3.5" /> Add Experience
+              <BriefcaseIcon className="size-3.5" /> Add Experience
+            </Button>
+          </Link>
+          <Link href="/admin/education">
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <GraduationCapIcon className="size-3.5" /> Add Education
             </Button>
           </Link>
           <Link href="/admin/profile">

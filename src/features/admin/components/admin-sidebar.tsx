@@ -7,6 +7,7 @@ import {
   CpuIcon,
   ExternalLinkIcon,
   FolderGit2Icon,
+  GraduationCapIcon,
   ImageIcon,
   LayoutDashboardIcon,
   LogOutIcon,
@@ -16,10 +17,17 @@ import {
   TrophyIcon,
   UserIcon,
 } from "lucide-react"
+import { Press_Start_2P } from "next/font/google"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { cn } from "@/lib/utils"
+
+const pressStart2P = Press_Start_2P({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+})
 
 import { useAdminAuth } from "./admin-auth-guard"
 
@@ -42,6 +50,7 @@ export const ADMIN_NAV_GROUPS: {
       { label: "Profile", href: "/admin/profile", icon: UserIcon },
       { label: "Projects", href: "/admin/projects", icon: FolderGit2Icon },
       { label: "Experience", href: "/admin/experience", icon: BriefcaseIcon },
+      { label: "Education", href: "/admin/education", icon: GraduationCapIcon },
     ],
   },
   {
@@ -68,6 +77,33 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = ADMIN_NAV_GROUPS.flatMap(
   (group) => group.items
 )
 
+function FolioKitLogo({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 18 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M0 17.4257V2.57426H1.17391V1.38614H2.15217V0H12.7174V1.38614H14.087V2.77228H15.2609V3.9604H16.6304V5.54455H18V20H2.54348V18.8119H1.36957V17.4257H0ZM2.54348 17.4257V17.8218H3.71739V18.8119H16.6304V6.73267H15.2609L15.0652 17.4257H2.54348ZM1.36957 15.8416H13.6957V6.73267H12.3261V5.14851H10.7609V1.38614H3.32609V2.57426H2.15217V3.76238H1.36957V15.8416Z"
+        fill="currentColor"
+      />
+      <path
+        d="M3.91296 10.8911V8.51483H5.86949V10.8911H3.91296Z"
+        fill="currentColor"
+      />
+      <path
+        d="M9 10.8911V8.51483H10.9565V10.8911H9Z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
 export function AdminSidebar({ className, onItemClick }: { className?: string; onItemClick?: () => void }) {
   const pathname = usePathname()
   const { logout } = useAdminAuth()
@@ -76,13 +112,18 @@ export function AdminSidebar({ className, onItemClick }: { className?: string; o
     <aside className={cn("flex flex-col h-full border-r border-border bg-card dark:border-line", className)}>
       {/* Brand Header */}
       <div className="flex h-14 items-center justify-between border-b border-border/80 px-4 dark:border-line">
-        <Link href="/admin" className="flex items-center gap-2 font-semibold text-sm text-foreground">
-          <div className="size-6 rounded-md bg-primary text-primary-foreground flex items-center justify-center font-mono text-xs font-bold">
-            P
-          </div>
-          <span className="tracking-tight">PortoCMS</span>
-          <span className="rounded bg-muted px-1.5 py-0.5 text-[0.625rem] font-mono text-muted-foreground uppercase">
-            Admin
+        <Link
+          href="/admin"
+          className="flex items-center gap-2.5 text-foreground hover:opacity-90 transition-opacity"
+        >
+          <FolioKitLogo className="w-[22px] h-[24.5px] shrink-0 text-foreground [image-rendering:pixelated]" />
+          <span
+            className={cn(
+              pressStart2P.className,
+              "text-[0.875rem] tracking-tight text-foreground select-none pt-0.5"
+            )}
+          >
+            FolioKit
           </span>
         </Link>
       </div>
@@ -126,13 +167,10 @@ export function AdminSidebar({ className, onItemClick }: { className?: string; o
         <Link
           href="/"
           target="_blank"
-          className="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
         >
-          <span className="flex items-center gap-2">
-            <ExternalLinkIcon className="size-3.5" />
-            Live Website
-          </span>
-          <span className="text-[0.6875rem] text-muted-foreground font-mono">View Live</span>
+          <ExternalLinkIcon className="size-3.5" />
+          <span>Live Website</span>
         </Link>
         <button
           onClick={logout}

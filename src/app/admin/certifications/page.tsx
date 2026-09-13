@@ -342,48 +342,13 @@ export default function AdminCertificationsPage() {
                   })}
                 </div>
 
-                {/* Input & Clear Button */}
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
-                    <FormMediaUpload
-                      value={editing.issuerLogoURL || ""}
-                      onChange={(val) => setEditing({ ...editing, issuerLogoURL: val })}
-                      placeholder="Pilih di atas atau unggah / ketik: /logos/dicoding.webp"
-                      accept="image/*"
-                      targetFolder="logos"
-                    />
-                  </div>
-                  {editing.issuerLogoURL && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEditing({ ...editing, issuerLogoURL: "" })}
-                      className="text-xs shrink-0 text-muted-foreground hover:text-foreground"
-                    >
-                      Clear Logo
-                    </Button>
-                  )}
-                </div>
-
-                {/* Selected Preview */}
-                {editing.issuerLogoURL && (
-                  <div className="flex items-center gap-2.5 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 dark:border-line">
-                    <div className="flex size-7 items-center justify-center rounded bg-white p-1 shadow-2xs">
-                      <img
-                        src={editing.issuerLogoURL}
-                        alt="Preview"
-                        className="size-full object-contain"
-                        onError={(e) => {
-                          ;(e.currentTarget as HTMLElement).style.display = "none"
-                        }}
-                      />
-                    </div>
-                    <span className="text-xs font-mono text-muted-foreground truncate">
-                      {editing.issuerLogoURL}
-                    </span>
-                  </div>
-                )}
+                {/* Upload & Gallery Selection */}
+                <FormMediaUpload
+                  value={editing.issuerLogoURL || ""}
+                  onChange={(val) => setEditing({ ...editing, issuerLogoURL: val })}
+                  accept="image/*"
+                  targetFolder="logos"
+                />
               </div>
             </FormField>
             <div className="grid grid-cols-2 gap-4">

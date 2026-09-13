@@ -1,0 +1,23 @@
+{
+  "id": "exp-1789283268442",
+  "companyName": "uh",
+  "companyLogo": "/logos/custompedia.webp",
+  "companyWebsite": "",
+  "positions": [
+    {
+      "id": "pos-1789283268442",
+      "title": "aw",
+      "employmentPeriod": {
+        "start": "01.2026"
+      },
+      "employmentType": "Full-time",
+      "icon": "astroid",
+      "description": "",
+      "skills": [
+        "Artificial Intelligence",
+        "Machine Learning"
+      ]
+    }
+  ],
+  "isCurrentEmployer": true
+}

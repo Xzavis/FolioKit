@@ -3,6 +3,7 @@
 import type { TechnologyCategory } from "@/config/technology-catalog"
 import type { Award } from "@/features/portfolio/types/awards"
 import type { Certification } from "@/features/portfolio/types/certifications"
+import type { Education } from "@/features/portfolio/types/education"
 import type { Experience } from "@/features/portfolio/types/experiences"
 import type { Project } from "@/features/portfolio/types/projects"
 import type { Publication } from "@/features/portfolio/types/publications"
@@ -24,6 +25,12 @@ export interface AdminProject extends Project {
 }
 
 export interface AdminExperience extends Experience {
+  status?: ContentStatus
+  displayOrder?: number
+  updatedAt?: string
+}
+
+export interface AdminEducation extends Education {
   status?: ContentStatus
   displayOrder?: number
   updatedAt?: string
@@ -148,6 +155,7 @@ export interface RecentChange {
     | "Profile"
     | "Project"
     | "Experience"
+    | "Education"
     | "Skill"
     | "Social Link"
     | "Settings"
@@ -164,6 +172,7 @@ export interface RecentChange {
 export interface DashboardMetrics {
   projectsCount: number
   experienceCount: number
+  educationCount: number
   skillsCount: number
   draftsCount: number
   awardsCount: number

@@ -54,7 +54,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       if (res.authorized) {
         sessionStorage.setItem("portocms_admin_auth", "1")
         setIsAuthenticated(true)
-        toastSuccess("Authenticated successfully. Welcome to PortoCMS Admin!")
+        toastSuccess("Authenticated successfully. Welcome to FolioKit!")
       } else {
         setError(res.message || "Invalid credentials.")
         toastError(res.message || "Invalid credentials.")
@@ -87,7 +87,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
             <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-3">
               <LockIcon className="size-6" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-foreground">PortoCMS Admin</h1>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">FolioKit</h1>
             <p className="text-xs text-muted-foreground mt-1">
               Local Content Management System
             </p>

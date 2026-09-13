@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { SectionSeparator } from "@/components/section-separator"
 import { Awards } from "@/features/portfolio/components/awards"
 import { Certifications } from "@/features/portfolio/components/certifications"
+import { Educations } from "@/features/portfolio/components/education"
 import { Experiences } from "@/features/portfolio/components/experiences"
 import { GitHubContributions } from "@/features/portfolio/components/github-contributions"
 import { Projects } from "@/features/portfolio/components/projects"
@@ -11,6 +12,7 @@ import { TechStack } from "@/features/portfolio/components/tech-stack"
 import {
   getAwards,
   getCertifications,
+  getEducations,
   getExperiences,
   getProfile,
   getProjects,
@@ -38,9 +40,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Page() {
-  const [experiences, projects, skills, awards, publications, certifications] =
+  const [experiences, educations, projects, skills, awards, publications, certifications] =
     await Promise.all([
       getExperiences(),
+      getEducations(),
       getProjects(),
       getSkills(),
       getAwards(),
@@ -54,6 +57,13 @@ export default async function Page() {
 
       <Experiences experiences={experiences} />
       <SectionSeparator />
+
+      {educations.length > 0 && (
+        <>
+          <Educations educations={educations} />
+          <SectionSeparator />
+        </>
+      )}
 
       <Projects projects={projects} />
       <SectionSeparator />

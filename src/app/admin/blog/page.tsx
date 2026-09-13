@@ -29,6 +29,7 @@ import { AdminAlertDialog, AdminDialog } from "@/features/admin/components/admin
 import {
   FormField,
   FormInput,
+  FormMediaUpload,
   FormSelect,
   FormTextarea,
 } from "@/features/admin/components/admin-form-elements"
@@ -371,29 +372,16 @@ export default function AdminBlogPage() {
             </div>
 
             <FormField
-              label="Thumbnail / Cover Image URL"
-              description="Direct image URL or local path (e.g. /image/blog-cover.webp)"
+              label="Thumbnail / Cover Image"
+              description="Unggah gambar sampul artikel atau pilih dari galeri"
             >
-              <FormInput
+              <FormMediaUpload
                 value={editing.thumbnail || ""}
-                onChange={(e) => setEditing({ ...editing, thumbnail: e.target.value })}
-                placeholder="https://miro.medium.com/... or /image/profile.webp"
+                onChange={(val) => setEditing({ ...editing, thumbnail: val })}
+                accept="image/*"
+                targetFolder="image"
               />
             </FormField>
-
-            {/* Thumbnail preview */}
-            {editing.thumbnail && (
-              <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-border bg-muted/30 p-1">
-                <img
-                  src={editing.thumbnail}
-                  alt="Cover Preview"
-                  className="size-full object-cover rounded"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none"
-                  }}
-                />
-              </div>
-            )}
 
             <FormField
               label="External Article Link (Optional)"

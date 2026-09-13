@@ -1,11 +1,21 @@
 import {
   AstroidIcon,
+  AwardIcon,
   BarChart3Icon,
+  BookOpenIcon,
   BriefcaseBusinessIcon,
+  Building2Icon,
+  Code2Icon,
   FlaskConicalIcon,
   GraduationCapIcon,
+  LaptopIcon,
+  LibraryIcon,
+  LightbulbIcon,
+  MedalIcon,
   NetworkIcon,
+  RocketIcon,
   SchoolIcon,
+  ScrollIcon,
   UsersIcon,
 } from "lucide-react"
 import React from "react"
@@ -29,7 +39,7 @@ export function IconRegistry({ name, className, fallback, ...props }: IconRegist
   const normalized = name.toLowerCase().trim()
 
   switch (normalized) {
-    // ─── Experience Position Icons ───────────────────────────────────────────
+    // ─── Experience & Education Position Icons ──────────────────────────────
     case "astroid":
     case "asteroid":
       return <AstroidIcon className={className} {...props} />
@@ -62,6 +72,42 @@ export function IconRegistry({ name, className, fallback, ...props }: IconRegist
     case "briefcase":
     case "briefcase-business":
       return <BriefcaseBusinessIcon className={className} {...props} />
+
+    case "book-open":
+    case "book":
+      return <BookOpenIcon className={className} {...props} />
+
+    case "library":
+      return <LibraryIcon className={className} {...props} />
+
+    case "award":
+      return <AwardIcon className={className} {...props} />
+
+    case "medal":
+      return <MedalIcon className={className} {...props} />
+
+    case "scroll":
+    case "diploma":
+      return <ScrollIcon className={className} {...props} />
+
+    case "code":
+    case "code-2":
+    case "code2":
+      return <Code2Icon className={className} {...props} />
+
+    case "laptop":
+      return <LaptopIcon className={className} {...props} />
+
+    case "rocket":
+      return <RocketIcon className={className} {...props} />
+
+    case "building":
+    case "building-2":
+    case "building2":
+      return <Building2Icon className={className} {...props} />
+
+    case "lightbulb":
+      return <LightbulbIcon className={className} {...props} />
 
     // ─── Social Platform Icons ───────────────────────────────────────────────
     case "github":

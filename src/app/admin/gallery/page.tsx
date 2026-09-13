@@ -261,14 +261,13 @@ export default function AdminGalleryPage() {
             </FormField>
 
             <FormField
-              label="Media URL or Local Path"
+              label="File Media"
               required
-              description="Pilih dari galeri, unggah file (WebP/PNG/WebM), atau masukkan link HTTPS"
+              description="Unggah file media baru (WebP, PNG, WebM, MP4) atau pilih dari galeri"
             >
               <FormMediaUpload
                 value={editing.src}
                 onChange={(val) => setEditing({ ...editing, src: val })}
-                placeholder="/image/btng.webp"
                 accept="image/*,video/webm,video/mp4"
                 targetFolder="image"
               />

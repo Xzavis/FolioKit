@@ -1,0 +1,29 @@
+{
+  "id": "universitas-dian-nuswantoro",
+  "schoolName": "Universitas Dian Nuswantoro",
+  "schoolLogo": "/logos/udinus.webp",
+  "schoolWebsite": "https://dinus.ac.id",
+  "degrees": [
+    {
+      "id": "bachelor-computer-science",
+      "title": "Bachelor of Computer Science",
+      "period": {
+        "start": "09.2022",
+        "end": "07.2026"
+      },
+      "degreeType": "Bachelor's Degree",
+      "icon": "graduation-cap",
+      "description": "- Current Cumulative GPA: 3.85 / 4.00\n- Focused in Artificial Intelligence, Deep Learning, and Full Stack Web Technologies\n- Active member of Google Developer Groups on Campus (GDGOC) and Dian Nuswantoro Computer Club (DNCC)",
+      "descriptionId": "- IPK Kumulatif saat ini: 3.85 / 4.00\n- Berfokus pada Kecerdasan Buatan, Deep Learning, dan Teknologi Web Full Stack\n- Anggota aktif Google Developer Groups on Campus (GDGOC) dan Dian Nuswantoro Computer Club (DNCC)",
+      "skills": [
+        "Computer Science",
+        "Artificial Intelligence",
+        "Data Structures & Algorithms",
+        "Software Engineering",
+        "Machine Learning"
+      ],
+      "isExpanded": true
+    }
+  ],
+  "isCurrent": true
+}

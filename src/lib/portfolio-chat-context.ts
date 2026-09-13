@@ -3,6 +3,7 @@ import { LocalContentRepository } from "@/lib/content"
 import type {
   Award,
   Certification,
+  Education,
   Experience,
   Profile,
   Project,
@@ -18,6 +19,7 @@ export type PortfolioData = {
   settings: SiteSettings
   projects: Project[]
   experiences: Experience[]
+  educations?: Education[]
   techStack: TechStack[]
   socialLinks: SocialLink[]
   awards: Award[]
@@ -37,6 +39,7 @@ type PortfolioDocumentType =
   | "project-impact"
   | "experience"
   | "experience-skills"
+  | "education"
   | "skills"
   | "certification"
   | "award"
@@ -756,6 +759,34 @@ function createOtherDocuments(
   const email = decodeEmail(data.user.email)
 
   return [
+    ...(data.educations || []).flatMap((education) =>
+      education.degrees.map((degree) => ({
+        id: `education:${education.id}:${degree.id}`,
+        type: "education" as const,
+        title: `${degree.title} - ${education.schoolName}`,
+        summary: `${degree.title} at ${education.schoolName}. Period: ${formatPeriod(degree.period)}. Type: ${degree.degreeType || "Not specified"}.`,
+        details: joinLines([
+          compactText(degree.description, 900),
+          education.schoolWebsite ? `Website: ${education.schoolWebsite}.` : undefined,
+          degree.skills?.length ? `Coursework & Skills: ${degree.skills.join(", ")}.` : undefined,
+        ]),
+        keywords: [
+          "education",
+          "pendidikan",
+          "kuliah",
+          "kampus",
+          "sekolah",
+          "university",
+          "degree",
+          "gelar",
+          education.schoolName,
+          degree.title,
+          ...(degree.skills || []),
+        ],
+        url: education.schoolWebsite,
+        priority: 15,
+      }))
+    ),
     ...data.certifications.map((certification) => ({
       id: `certification:${certification.title}`,
       type: "certification" as const,
@@ -1383,12 +1414,13 @@ export async function buildPortfolioChatContext({
   query: string
 }) {
   // ponytail: load dynamic content via LocalContentRepository to decouple from static JSON imports
-  const [user, settings, projects, experiences, techStack, socialLinks, awards, certifications, publications] =
+  const [user, settings, projects, experiences, educations, techStack, socialLinks, awards, certifications, publications] =
     await Promise.all([
       LocalContentRepository.getProfile(),
       LocalContentRepository.getSettings(),
       LocalContentRepository.getProjects(),
       LocalContentRepository.getExperiences(),
+      LocalContentRepository.getEducations(),
       LocalContentRepository.getSkills(),
       LocalContentRepository.getSocialLinks(),
       LocalContentRepository.getAwards(),
@@ -1401,6 +1433,7 @@ export async function buildPortfolioChatContext({
     settings,
     projects,
     experiences,
+    educations,
     techStack,
     socialLinks,
     awards,

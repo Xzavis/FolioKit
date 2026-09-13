@@ -10,6 +10,7 @@ import {
   deleteAwardData,
   deleteBlogData,
   deleteCertificationData,
+  deleteEducationData,
   deleteExperienceData,
   deleteGalleryData,
   deleteProjectData,
@@ -19,6 +20,7 @@ import {
   getAdminAwards,
   getAdminBlogPosts,
   getAdminCertifications,
+  getAdminEducations,
   getAdminExperiences,
   getAdminGalleryItems,
   getAdminProfile,
@@ -33,6 +35,7 @@ import {
   reorderAwardsData,
   reorderBlogData,
   reorderCertificationsData,
+  reorderEducationsData,
   reorderExperiencesData,
   reorderGalleryData,
   reorderProjectsData,
@@ -42,6 +45,7 @@ import {
   saveAwardData,
   saveBlogData,
   saveCertificationData,
+  saveEducationData,
   saveExperienceData,
   saveGalleryData,
   saveProfileData,
@@ -55,6 +59,7 @@ import type {
   AdminAward,
   AdminBlogPost,
   AdminCertification,
+  AdminEducation,
   AdminExperience,
   AdminGalleryItem,
   AdminProfile,
@@ -153,6 +158,39 @@ export async function deleteExperienceAction(id: string): Promise<{ success: boo
   const res = await deleteExperienceData(id)
   revalidatePath("/admin")
   revalidatePath("/admin/experience")
+  revalidatePath("/")
+  return res
+}
+
+// Education
+export async function fetchEducationsAction(): Promise<AdminEducation[]> {
+  return getAdminEducations()
+}
+
+export async function saveEducationAction(education: AdminEducation): Promise<{ success: boolean; message: string }> {
+  const res = await saveEducationData(education)
+  revalidatePath("/admin")
+  revalidatePath("/admin/education")
+  revalidatePath("/")
+  return res
+}
+
+export async function reorderEducationsAction(
+  educations: AdminEducation[]
+): Promise<{ success: boolean; message: string; data?: AdminEducation[] }> {
+  const res = await reorderEducationsData(educations)
+  if (res.success) {
+    revalidatePath("/admin")
+    revalidatePath("/admin/education")
+    revalidatePath("/")
+  }
+  return res
+}
+
+export async function deleteEducationAction(id: string): Promise<{ success: boolean; message: string }> {
+  const res = await deleteEducationData(id)
+  revalidatePath("/admin")
+  revalidatePath("/admin/education")
   revalidatePath("/")
   return res
 }

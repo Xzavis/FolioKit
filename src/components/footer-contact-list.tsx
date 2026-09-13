@@ -45,8 +45,8 @@ export function FooterContactList({
 }) {
   return (
     <ul>
-      {links.map((link) => (
-        <li key={link.href}>
+      {links.map((link, idx) => (
+        <li key={`${link.href}-${idx}`}>
           <SocialCard
             link={link}
             github={link.title === "GitHub" ? github : null}

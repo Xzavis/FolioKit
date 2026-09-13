@@ -95,6 +95,15 @@ export default function AdminProjectsPage() {
       })
   }, [projects, search, statusFilter, sortBy])
 
+  const counts = useMemo(() => {
+    return {
+      all: projects.length,
+      published: projects.filter((p) => (p.status ?? "published") === "published").length,
+      draft: projects.filter((p) => p.status === "draft").length,
+      archived: projects.filter((p) => p.status === "archived").length,
+    }
+  }, [projects])
+
   const handleDelete = async () => {
     if (!projectToDelete) return
     setIsDeleting(true)
@@ -143,18 +152,32 @@ export default function AdminProjectsPage() {
 
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center rounded-lg border border-border/70 p-0.5 bg-muted/30 dark:border-line">
-            {["all", "published", "draft"].map((status) => (
+            {[
+              { key: "all", label: "All", count: counts.all },
+              { key: "published", label: "Published", count: counts.published },
+              { key: "draft", label: "Drafts", count: counts.draft },
+              { key: "archived", label: "Archived", count: counts.archived },
+            ].map((tab) => (
               <button
-                key={status}
+                key={tab.key}
                 type="button"
-                onClick={() => setStatusFilter(status)}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors ${
-                  statusFilter === status
+                onClick={() => setStatusFilter(tab.key)}
+                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                  statusFilter === tab.key
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {status}
+                <span>{tab.label}</span>
+                <span
+                  className={`rounded-full px-1.5 py-0.2 text-[0.625rem] font-semibold ${
+                    statusFilter === tab.key
+                      ? "bg-muted text-foreground"
+                      : "bg-muted/60 text-muted-foreground"
+                  }`}
+                >
+                  {tab.count}
+                </span>
               </button>
             ))}
           </div>

@@ -18,12 +18,14 @@ export function AdminHeader({
   actions,
   backHref,
   backLabel,
+  onBack,
 }: {
   title: string
   subtitle?: string
   actions?: React.ReactNode
   backHref?: string
   backLabel?: string
+  onBack?: () => void
 }) {
   const [publishOpen, setPublishOpen] = useState(false)
   const [commitMessage, setCommitMessage] = useState("")
@@ -55,7 +57,16 @@ export function AdminHeader({
     <>
       <div className="flex flex-col gap-4 pb-6 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 dark:border-line">
         <div>
-          {backHref && (
+          {onBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              className="group mb-1.5 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ArrowLeftIcon className="size-3.5 transition-transform group-hover:-translate-x-0.5" />
+              <span>{backLabel || "Back"}</span>
+            </button>
+          ) : backHref ? (
             <Link
               href={backHref}
               className="group mb-1.5 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -63,7 +74,7 @@ export function AdminHeader({
               <ArrowLeftIcon className="size-3.5 transition-transform group-hover:-translate-x-0.5" />
               <span>{backLabel || "Back"}</span>
             </Link>
-          )}
+          ) : null}
           <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">{title}</h1>
           {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
         </div>

@@ -2,9 +2,7 @@
   "id": "starter-project",
   "title": "Starter Project Showcase",
   "category": "Web Application",
-  "categoryId": "Aplikasi Web",
   "tagline": "A full-featured modern web application template featuring responsive design, modular architecture, and content management.",
-  "taglineId": "Template aplikasi web modern berfitur lengkap dengan desain responsif, arsitektur modular, dan manajemen konten.",
   "seoDescription": "A starter project showcase demonstrating portfolio features in PortoCMS.",
   "year": "2026",
   "image": "/projects/starter-project/cover.svg",
@@ -33,37 +31,28 @@
     "Content management directly through the /admin dashboard",
     "Optimized performance and accessibility standards"
   ],
-  "featuresId": [
-    "Desain responsif di seluruh tampilan mobile, tablet, dan desktop",
-    "Manajemen konten langsung melalui dashboard /admin",
-    "Standar performa dan aksesibilitas yang dioptimalkan"
-  ],
   "impact": [
     "100% customizable starter template",
     "Fast page load speed under 1s",
     "Ready for instant deployment"
   ],
-  "impactId": [
-    "Template starter yang 100% dapat dikustomisasi",
-    "Kecepatan loading halaman di bawah 1 detik",
-    "Siap untuk deployment instan"
-  ],
   "collaboration": {
     "ownership": "Personal Project",
-    "ownershipId": "Proyek Pribadi",
     "label": "Created by",
     "team": "Independent",
     "role": "Creator & Lead Developer",
-    "roleId": "Kreator & Pengembang Utama",
     "contributions": [
       "System design and architecture",
       "Full stack development and testing"
-    ],
-    "contributionsId": [
-      "Desain sistem dan arsitektur",
-      "Pengembangan full stack dan pengujian"
     ]
   },
   "description": "This is a starter project showcase demonstrating how portfolio projects are displayed. You can easily edit or replace this project using the built-in PortoCMS admin dashboard.",
-  "featured": true
+  "notes": "",
+  "isExpanded": true,
+  "badge": "",
+  "gallery": [],
+  "status": "published",
+  "featured": true,
+  "displayOrder": 1,
+  "updatedAt": "2026-09-13T09:36:49.408Z"
 }

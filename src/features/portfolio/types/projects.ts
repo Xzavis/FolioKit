@@ -75,4 +75,8 @@ export type Project = {
   gallery?: string[]
   /** Whether this project is featured/highlighted on the homepage. Defaults to true. */
   featured?: boolean
+  /** Publication status: "published" (default), "draft", or "archived" */
+  status?: "published" | "draft" | "archived"
+  /** Display sorting order / weight */
+  displayOrder?: number
 }

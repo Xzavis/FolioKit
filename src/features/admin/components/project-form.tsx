@@ -1,12 +1,15 @@
 "use client"
 
-// ponytail: progressive disclosure project editor with tabbed sections, live preview and delete confirmation
 import {
+  ArchiveIcon,
   ArrowDownIcon,
+  ArrowLeftIcon,
   ArrowUpIcon,
   BookOpenIcon,
   CodeIcon,
   EyeIcon,
+  FileTextIcon,
+  GlobeIcon,
   ImageIcon,
   LayersIcon,
   PlusIcon,
@@ -16,12 +19,12 @@ import {
   Trash2Icon,
   XIcon,
 } from "lucide-react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Tag } from "@/components/ui/tag"
+import { cn } from "@/lib/utils"
 
 import {
   deleteProjectAction,
@@ -34,7 +37,6 @@ import {
   FormField,
   FormInput,
   FormMediaUpload,
-  FormSelect,
   FormSwitch,
   FormTextarea,
 } from "./admin-form-elements"
@@ -90,18 +92,44 @@ export function ProjectForm({ initialData, isNew = false }: ProjectFormProps) {
   }
 
   const [project, setProject] = useState<AdminProject>(defaultProject)
+  const [initialSnapshot, setInitialSnapshot] = useState<string>(() => JSON.stringify(defaultProject))
   const [activeTab, setActiveTab] = useState<TabKey>("basic")
   const [isSaving, setIsSaving] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
+  const [discardDialogOpen, setDiscardDialogOpen] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Track unsaved modifications
+  const isDirty = useMemo(() => {
+    return JSON.stringify(project) !== initialSnapshot
+  }, [project, initialSnapshot])
+
+  // Prevent accidental navigation/tab closing if there are unsaved edits
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault()
+        e.returnValue = ""
+      }
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+  }, [isDirty])
+
+  const handleBack = () => {
+    if (isDirty) {
+      setDiscardDialogOpen(true)
+    } else {
+      router.push("/admin/projects")
+    }
+  }
 
   // Array inputs helpers
   const [newSkill, setNewSkill] = useState("")
   const [newFeature, setNewFeature] = useState("")
   const [newImpact, setNewImpact] = useState("")
-  const [newGalleryImage, setNewGalleryImage] = useState("")
 
   // Automatically create dedicated project media folder (public/projects/[slug]/)
   useEffect(() => {
@@ -137,18 +165,18 @@ export function ProjectForm({ initialData, isNew = false }: ProjectFormProps) {
     }
 
     setIsSaving(true)
+    const finalStatus = targetStatus ?? project.status ?? "published"
     const payload: AdminProject = {
       ...project,
-      status: targetStatus ?? project.status ?? "published",
+      status: finalStatus,
     }
 
     try {
       const res = await saveProjectAction(payload)
       if (res.success) {
         success(res.message)
-        if (isNew) {
-          router.push(`/admin/projects/${payload.id}`)
-        }
+        setInitialSnapshot(JSON.stringify(payload))
+        router.push("/admin/projects")
       } else {
         error(res.message)
       }
@@ -182,6 +210,8 @@ export function ProjectForm({ initialData, isNew = false }: ProjectFormProps) {
       <AdminHeader
         title={isNew ? "Create New Project" : `Edit: ${project.title || "Project"}`}
         subtitle="Manage project case study, screenshots, technical stack, and publication status."
+        onBack={handleBack}
+        backLabel="Back to Projects"
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -231,6 +261,19 @@ export function ProjectForm({ initialData, isNew = false }: ProjectFormProps) {
             >
               <Icon className="size-3.5" />
               <span>{tab.label}</span>
+              {tab.key === "publishing" && (
+                <span
+                  className={cn(
+                    "size-2 rounded-full inline-block ml-0.5",
+                    project.status === "draft"
+                      ? "bg-amber-500 ring-2 ring-amber-500/20"
+                      : project.status === "archived"
+                      ? "bg-zinc-500 ring-2 ring-zinc-500/20"
+                      : "bg-emerald-500 ring-2 ring-emerald-500/20"
+                  )}
+                  title={`Status: ${project.status ?? "published"}`}
+                />
+              )}
             </button>
           )
         })}
@@ -433,39 +476,24 @@ export function ProjectForm({ initialData, isNew = false }: ProjectFormProps) {
             {/* Hero Image */}
             <div className="space-y-3">
               <FormField
-                label="Hero Image / Thumbnail Path"
+                label="Hero Image / Thumbnail"
                 description={`Unggah gambar atau pilih dari galeri folder proyek (public/projects/${project.id || "[slug]"}/)`}
               >
                 <FormMediaUpload
                   value={project.image}
                   onChange={(val) => handleChange("image", val)}
-                  placeholder={`/projects/${project.id || "custora"}/1.webp`}
                   accept="image/*"
                   targetFolder="projects"
                   projectSlug={project.id}
                 />
               </FormField>
-
-              {project.image && (
-                <div className="overflow-hidden rounded-lg border border-border max-w-md bg-muted/30 p-2">
-                  <img
-                    src={project.image}
-                    alt="Thumbnail preview"
-                    className="aspect-video w-full rounded object-cover"
-                    onError={(e) => {
-                      ;(e.currentTarget as HTMLElement).style.display = "none"
-                    }}
-                  />
-                </div>
-              )}
             </div>
 
             {/* Monochrome Logo */}
-            <FormField label="Monochrome Logo Path (Optional)" description="Unggah logo proyek ke folder public/logos/ atau pilih dari katalog logo">
+            <FormField label="Monochrome Logo (Optional)" description="Unggah logo proyek ke folder public/logos/ atau pilih dari katalog logo">
               <FormMediaUpload
                 value={project.logo ?? ""}
                 onChange={(val) => handleChange("logo", val)}
-                placeholder="/logos/custompedia.webp"
                 accept="image/*"
                 targetFolder="logos"
               />
@@ -485,35 +513,19 @@ export function ProjectForm({ initialData, isNew = false }: ProjectFormProps) {
               </div>
 
               {/* Add to Gallery Section */}
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2 dark:border-input dark:bg-input/10">
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3.5 space-y-2 dark:border-input dark:bg-input/10">
                 <label className="text-xs font-medium text-foreground">Tambah Foto ke Galeri Proyek</label>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                  <div className="flex-1">
-                    <FormMediaUpload
-                      value={newGalleryImage}
-                      onChange={(val) => setNewGalleryImage(val)}
-                      placeholder={`/projects/${project.id || "slug"}/1.webp`}
-                      accept="image/*"
-                      targetFolder="projects"
-                      projectSlug={project.id}
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={!newGalleryImage.trim()}
-                    onClick={() => {
-                      if (newGalleryImage.trim()) {
-                        handleChange("gallery", [...(project.gallery || []), newGalleryImage.trim()])
-                        setNewGalleryImage("")
-                      }
-                    }}
-                    className="shrink-0 text-xs gap-1"
-                  >
-                    <PlusIcon className="size-3.5" /> Tambah ke Galeri
-                  </Button>
-                </div>
+                <FormMediaUpload
+                  value=""
+                  onChange={(val) => {
+                    if (val) {
+                      handleChange("gallery", [...(project.gallery || []), val])
+                    }
+                  }}
+                  accept="image/*"
+                  targetFolder="projects"
+                  projectSlug={project.id}
+                />
               </div>
 
               {/* Gallery Items Grid */}
@@ -687,37 +699,145 @@ export function ProjectForm({ initialData, isNew = false }: ProjectFormProps) {
 
         {/* 5. PUBLISHING */}
         {activeTab === "publishing" && (
-          <div className="rounded-xl border border-border/80 bg-card p-5 dark:border-line space-y-4">
-            <h2 className="text-sm font-semibold text-foreground">Publishing & Visibility</h2>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormField label="Publication Status">
-                <FormSelect
-                  value={project.status ?? "published"}
-                  onChange={(e) => handleChange("status", e.target.value as ContentStatus)}
-                  options={[
-                    { label: "Published (Visible on Portfolio)", value: "published" },
-                    { label: "Draft (Saved privately)", value: "draft" },
-                    { label: "Archived (Hidden from main list)", value: "archived" },
-                  ]}
-                />
-              </FormField>
-
-              <FormField label="Display Order (Sort weight)">
-                <FormInput
-                  type="number"
-                  value={project.displayOrder ?? 1}
-                  onChange={(e) => handleChange("displayOrder", parseInt(e.target.value, 10) || 1)}
-                />
-              </FormField>
+          <div className="rounded-xl border border-border/80 bg-card p-5 dark:border-line space-y-6">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">Publishing & Visibility Settings</h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Configure whether this project is published live, saved privately as a draft, or archived.
+              </p>
             </div>
 
-            <div className="border-t border-border/60 pt-4 dark:border-line">
+            {/* Visual Status Cards */}
+            <div className="space-y-3">
+              <label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                <span>Publication Status</span>
+                <span className="text-[0.6875rem] font-normal text-muted-foreground">Select one state</span>
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* Published Option */}
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleChange("status", "published")}
+                  onKeyDown={(e) => e.key === "Enter" && handleChange("status", "published")}
+                  className={cn(
+                    "relative flex flex-col justify-between p-4 rounded-xl border text-left cursor-pointer transition-all",
+                    project.status === "published"
+                      ? "border-emerald-500/60 bg-emerald-500/5 ring-1 ring-emerald-500/30 shadow-xs"
+                      : "border-border/70 hover:border-border hover:bg-muted/30 dark:border-line"
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div
+                      className={cn(
+                        "p-2 rounded-lg",
+                        project.status === "published"
+                          ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      <GlobeIcon className="size-4" />
+                    </div>
+                    {project.status === "published" && (
+                      <span className="text-[0.625rem] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-3">
+                    <div className="text-xs font-semibold text-foreground">Published</div>
+                    <p className="text-[0.6875rem] text-muted-foreground mt-1 leading-normal">
+                      Live on your public portfolio and case study showcases.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Draft Option */}
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleChange("status", "draft")}
+                  onKeyDown={(e) => e.key === "Enter" && handleChange("status", "draft")}
+                  className={cn(
+                    "relative flex flex-col justify-between p-4 rounded-xl border text-left cursor-pointer transition-all",
+                    project.status === "draft"
+                      ? "border-amber-500/60 bg-amber-500/5 ring-1 ring-amber-500/30 shadow-xs"
+                      : "border-border/70 hover:border-border hover:bg-muted/30 dark:border-line"
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div
+                      className={cn(
+                        "p-2 rounded-lg",
+                        project.status === "draft"
+                          ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      <FileTextIcon className="size-4" />
+                    </div>
+                    {project.status === "draft" && (
+                      <span className="text-[0.625rem] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-3">
+                    <div className="text-xs font-semibold text-foreground">Draft</div>
+                    <p className="text-[0.6875rem] text-muted-foreground mt-1 leading-normal">
+                      Privately saved in dashboard. Hidden from public visitors.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Archived Option */}
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleChange("status", "archived")}
+                  onKeyDown={(e) => e.key === "Enter" && handleChange("status", "archived")}
+                  className={cn(
+                    "relative flex flex-col justify-between p-4 rounded-xl border text-left cursor-pointer transition-all",
+                    project.status === "archived"
+                      ? "border-zinc-500/60 bg-muted/40 ring-1 ring-zinc-500/30 shadow-xs"
+                      : "border-border/70 hover:border-border hover:bg-muted/30 dark:border-line"
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div
+                      className={cn(
+                        "p-2 rounded-lg",
+                        project.status === "archived"
+                          ? "bg-zinc-500/20 text-foreground"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      <ArchiveIcon className="size-4" />
+                    </div>
+                    {project.status === "archived" && (
+                      <span className="text-[0.625rem] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-zinc-500/20 text-muted-foreground">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-3">
+                    <div className="text-xs font-semibold text-foreground">Archived</div>
+                    <p className="text-[0.6875rem] text-muted-foreground mt-1 leading-normal">
+                      Unlisted from portfolio showcases, kept for records.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ponytail: display order is managed directly on the projects list via up/down reorder */}
+            <div className="pt-2 border-t border-border/60 dark:border-line">
               <FormSwitch
                 checked={project.featured ?? false}
                 onChange={(checked) => handleChange("featured", checked)}
                 label="Featured Project"
-                description="Highlight this project at the top of your portfolio homepage."
+                description="Highlight this project prominently at the top of your portfolio homepage."
               />
             </div>
           </div>
@@ -725,35 +845,74 @@ export function ProjectForm({ initialData, isNew = false }: ProjectFormProps) {
       </div>
 
       {/* Actions Bottom Bar */}
-      <div className="sticky bottom-4 z-20 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card/90 p-4 shadow-xl backdrop-blur-md dark:border-line">
-        <Link href="/admin/projects">
-          <Button variant="ghost" size="sm">
-            Cancel
-          </Button>
-        </Link>
+      <div className="sticky bottom-4 z-20 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card/95 p-3.5 shadow-xl backdrop-blur-md dark:border-line">
+        {/* Left: Mobile-accessible Back button with Unsaved Changes Alert */}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleBack}
+          className="gap-2 h-9 px-3.5 border-border/80 hover:bg-muted text-foreground font-medium touch-manipulation"
+        >
+          <ArrowLeftIcon className="size-4" />
+          <span>Back to Projects</span>
+        </Button>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => handleSubmit("draft")}
-            disabled={isSaving}
-            className="gap-1.5"
-          >
-            <SaveIcon className="size-3.5" /> Save Draft
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => handleSubmit("published")}
-            disabled={isSaving}
-            className="gap-1.5"
-          >
-            <SendIcon className="size-3.5" /> {isSaving ? "Saving..." : "Publish & Save"}
-          </Button>
+        {/* Right: Single Primary Save Button */}
+        <div className="flex items-center gap-2.5">
+
+          {/* Unified Primary Action Button */}
+          {project.status === "draft" ? (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => handleSubmit()}
+              disabled={isSaving}
+              className="gap-2 h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-600 dark:hover:bg-amber-700 font-medium shadow-xs touch-manipulation"
+            >
+              <SaveIcon className="size-4" />
+              <span>{isSaving ? "Saving..." : isNew ? "Save as Draft" : "Save Draft Changes"}</span>
+            </Button>
+          ) : project.status === "archived" ? (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => handleSubmit()}
+              disabled={isSaving}
+              className="gap-2 h-9 px-4 bg-zinc-700 hover:bg-zinc-800 text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 font-medium shadow-xs touch-manipulation"
+            >
+              <ArchiveIcon className="size-4" />
+              <span>{isSaving ? "Archiving..." : "Save as Archived"}</span>
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => handleSubmit()}
+              disabled={isSaving}
+              className="gap-2 h-9 px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-xs touch-manipulation"
+            >
+              <SendIcon className="size-4" />
+              <span>{isSaving ? "Publishing..." : isNew ? "Publish Project" : "Publish & Save"}</span>
+            </Button>
+          )}
         </div>
       </div>
+
+      {/* Discard Unsaved Changes Alert Dialog */}
+      <AdminAlertDialog
+        open={discardDialogOpen}
+        onClose={() => setDiscardDialogOpen(false)}
+        onConfirm={() => {
+          setDiscardDialogOpen(false)
+          router.push("/admin/projects")
+        }}
+        title="Discard Unsaved Changes?"
+        description="You have unsaved changes that will be lost if you leave this page. Are you sure you want to go back?"
+        confirmText="Discard & Go Back"
+        cancelText="Keep Editing"
+        variant="destructive"
+      />
 
       {/* Delete Confirmation Alert */}
       <AdminAlertDialog

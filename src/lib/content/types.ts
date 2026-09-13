@@ -1,5 +1,6 @@
 import type { Award } from "@/features/portfolio/types/awards"
 import type { Certification } from "@/features/portfolio/types/certifications"
+import type { Education, EducationDegree } from "@/features/portfolio/types/education"
 import type { Experience, ExperiencePosition } from "@/features/portfolio/types/experiences"
 import type {
   Project,
@@ -15,6 +16,8 @@ import type { User } from "@/features/portfolio/types/user"
 export type {
   Award,
   Certification,
+  Education,
+  EducationDegree,
   Experience,
   ExperiencePosition,
   Project,

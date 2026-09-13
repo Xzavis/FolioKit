@@ -61,7 +61,7 @@ export function FormTextarea({ className, error, rows = 4, ...props }: FormTexta
 
 export interface FormSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   error?: string
-  options: { label: string; value: string }[]
+  options: { label: string; value: string; disabled?: boolean }[]
 }
 
 export function FormSelect({ className, error, options, ...props }: FormSelectProps) {
@@ -75,7 +75,12 @@ export function FormSelect({ className, error, options, ...props }: FormSelectPr
       {...props}
     >
       {options.map((opt) => (
-        <option key={opt.value} value={opt.value} className="bg-popover text-popover-foreground">
+        <option
+          key={opt.value}
+          value={opt.value}
+          disabled={opt.disabled}
+          className="bg-popover text-popover-foreground disabled:text-muted-foreground disabled:bg-muted/50"
+        >
           {opt.label}
         </option>
       ))}
@@ -502,11 +507,10 @@ export interface FormMediaUploadProps {
   className?: string
 }
 
-// ponytail: unified input with direct 1-click upload, deduplication, and media library browser
+// ponytail: streamlined media selector with direct upload and gallery modal -- zero manual path inputs
 export function FormMediaUpload({
   value,
   onChange,
-  placeholder = "/image/example.webp or https://...",
   error,
   accept = "image/*,video/webm,video/mp4",
   targetFolder = "image",
@@ -549,61 +553,134 @@ export function FormMediaUpload({
     }
   }
 
+  const isVideo = /\.(webm|mp4|ogg)(\?.*)?$/i.test(value || "")
+  const fileName = value ? value.split("/").pop() || value : ""
+
   return (
-    <div className={cn("space-y-2", className)}>
-      <div className="flex items-center gap-2">
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          accept={accept}
-          className="hidden"
-          aria-hidden="true"
-          disabled={disabled || isUploading}
-        />
-        <div className="relative flex-1">
-          <FormInput
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-            error={error}
-            disabled={disabled || isUploading}
-          />
+    <div className={cn("space-y-1.5", className)}>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept={accept}
+        className="hidden"
+        aria-hidden="true"
+        disabled={disabled || isUploading}
+      />
+
+      {value ? (
+        // Selected Media Card (Read-only visual preview with Replace & Clear controls)
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card/80 p-2 dark:border-input">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            {/* Thumbnail */}
+            <div className="relative size-10 shrink-0 overflow-hidden rounded-md border border-border/80 bg-muted/50 flex items-center justify-center">
+              {isVideo ? (
+                <div className="flex items-center justify-center size-full bg-muted text-muted-foreground">
+                  <VideoIcon className="size-4" />
+                </div>
+              ) : (
+                <img
+                  src={value}
+                  alt={fileName}
+                  className="size-full object-cover"
+                  onError={(e) => {
+                    ;(e.currentTarget as HTMLElement).style.display = "none"
+                  }}
+                />
+              )}
+            </div>
+
+            {/* Media details */}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-medium text-foreground" title={value}>
+                {fileName}
+              </p>
+              <p className="truncate text-[10px] text-muted-foreground font-mono" title={value}>
+                {value}
+              </p>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              disabled={disabled || isUploading}
+              onClick={() => setIsLibraryOpen(true)}
+              className="inline-flex items-center gap-1 rounded-md border border-border/70 bg-muted/40 px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted focus:outline-none disabled:opacity-50 dark:border-input"
+              title="Pilih file lain dari galeri"
+            >
+              <FolderOpenIcon className="size-3 text-muted-foreground" />
+              <span className="hidden sm:inline">Galeri</span>
+            </button>
+
+            <button
+              type="button"
+              disabled={disabled || isUploading}
+              onClick={() => fileInputRef.current?.click()}
+              className="inline-flex items-center gap-1 rounded-md border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20 focus:outline-none disabled:opacity-50"
+              title="Unggah file baru dari komputer"
+            >
+              {isUploading ? (
+                <Loader2Icon className="size-3 animate-spin" />
+              ) : (
+                <UploadIcon className="size-3" />
+              )}
+              <span className="hidden sm:inline">{isUploading ? "Uploading..." : "Ganti"}</span>
+            </button>
+
+            <button
+              type="button"
+              disabled={disabled || isUploading}
+              onClick={() => onChange("")}
+              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus:outline-none disabled:opacity-50"
+              title="Hapus media"
+            >
+              <XIcon className="size-3.5" />
+            </button>
+          </div>
         </div>
+      ) : (
+        // Empty State: Action Buttons to Upload or Pick from Gallery
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={disabled || isUploading}
+            onClick={() => fileInputRef.current?.click()}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/20 focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:border-input"
+          >
+            {isUploading ? (
+              <>
+                <Loader2Icon className="size-3.5 animate-spin text-primary" />
+                <span>Mengunggah...</span>
+              </>
+            ) : (
+              <>
+                <UploadIcon className="size-3.5 text-primary" />
+                <span>Unggah Media</span>
+              </>
+            )}
+          </button>
 
-        {/* Browse Media Library Button */}
-        <button
-          type="button"
-          disabled={disabled || isUploading}
-          onClick={() => setIsLibraryOpen(true)}
-          className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-border bg-muted/60 px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted hover:text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:border-input dark:bg-input/30"
-          title="Buka galeri gambar/banner yang sudah ada"
-        >
-          <FolderOpenIcon className="size-3.5 text-muted-foreground" />
-          <span>Galeri</span>
-        </button>
+          <button
+            type="button"
+            disabled={disabled || isUploading}
+            onClick={() => setIsLibraryOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/60 px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:border-input dark:bg-input/30"
+          >
+            <FolderOpenIcon className="size-3.5 text-muted-foreground" />
+            <span>Pilih dari Galeri</span>
+          </button>
 
-        {/* Direct Upload Button */}
-        <button
-          type="button"
-          disabled={disabled || isUploading}
-          onClick={() => fileInputRef.current?.click()}
-          className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-border bg-primary/10 px-3 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/20 focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:border-input"
-          title="Unggah file baru langsung dari komputer"
-        >
-          {isUploading ? (
-            <>
-              <Loader2Icon className="size-3.5 animate-spin text-primary" />
-              <span>Uploading...</span>
-            </>
-          ) : (
-            <>
-              <UploadIcon className="size-3.5 text-primary" />
-              <span>Upload</span>
-            </>
-          )}
-        </button>
-      </div>
+          <span className="text-[11px] text-muted-foreground italic ml-1">
+            Belum ada media yang dipilih
+          </span>
+        </div>
+      )}
+
+      {error && (
+        <p className="text-[0.75rem] font-medium text-destructive animate-in fade-in-50">{error}</p>
+      )}
 
       {/* Media Library Dialog */}
       {isLibraryOpen && (

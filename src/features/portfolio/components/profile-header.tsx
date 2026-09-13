@@ -108,8 +108,8 @@ export function ProfileHeader({
         <div className="mt-5 border-t border-line pt-4">
           <h2 className="sr-only">Social links</h2>
           <ul className="flex flex-wrap gap-2">
-            {socialLinks.filter((link) => link.visible !== false).map((link) => (
-              <li key={link.title}>
+            {socialLinks.filter((link) => link.visible !== false).map((link, idx) => (
+              <li key={`${link.title}-${link.href}-${idx}`}>
                 <a
                   href={link.href}
                   target="_blank"

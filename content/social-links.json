@@ -2,35 +2,16 @@
   {
     "icon": "github",
     "title": "GitHub",
-    "subtitle": "@yourusername",
-    "href": "https://github.com/yourusername",
-    "visible": true
+    "href": "awdawd"
   },
   {
     "icon": "linkedin",
     "title": "LinkedIn",
-    "subtitle": "yourusername",
-    "href": "https://linkedin.com/in/yourusername",
-    "visible": true
+    "href": "kjawdaw"
   },
   {
-    "icon": "instagram",
-    "title": "Instagram",
-    "href": "gvg"
-  },
-  {
-    "icon": "dribbble",
-    "title": "Dribbble",
-    "href": "fchf"
-  },
-  {
-    "icon": "linkedin",
-    "title": "LinkedIn",
-    "href": "fgfgf"
-  },
-  {
-    "icon": "tiktok",
-    "title": "TikTok",
-    "href": "bvbvb"
+    "icon": "huggingface",
+    "title": "Hugging Face",
+    "href": "kjbd"
   }
 ]

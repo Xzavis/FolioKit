@@ -79,11 +79,20 @@ export default function AdminSocialLinksPage() {
     loadLinks()
   }, [])
 
+  const usedPlatforms = new Set(links.map((l) => l.platform))
+  const availablePlatforms = PLATFORMS.filter((p) => !usedPlatforms.has(p))
+  const isAllPlatformsAdded = availablePlatforms.length === 0
+
   const openCreateModal = () => {
-    const cfg = PLATFORM_CONFIG["GitHub"]
+    if (availablePlatforms.length === 0) {
+      error("All available social platforms have already been added. You can edit existing links.")
+      return
+    }
+    const defaultPlatform = availablePlatforms[0]
+    const cfg = PLATFORM_CONFIG[defaultPlatform]
     const newLink: AdminSocialLink = {
-      id: `social-${Date.now()}`,
-      platform: "GitHub",
+      id: `new-${defaultPlatform.toLowerCase()}-${Date.now()}`,
+      platform: defaultPlatform,
       label: cfg.label,
       icon: cfg.icon,
       url: "",
@@ -156,6 +165,15 @@ export default function AdminSocialLinksPage() {
     e.preventDefault()
     if (!editingLink || !editingLink.url.trim()) return
 
+    // Prevent duplicate platform entries
+    const isDuplicate = links.some(
+      (l) => l.platform === editingLink.platform && l.id !== editingLink.id
+    )
+    if (isDuplicate) {
+      error(`Platform "${editingLink.platform}" already exists. Only 1 link per platform is allowed.`)
+      return
+    }
+
     setIsSaving(true)
     try {
       const res = await saveSocialLinkAction(editingLink)
@@ -198,7 +216,13 @@ export default function AdminSocialLinksPage() {
         title="Social Links & Networks"
         subtitle="Manage public profiles, external contact channels, and footer links."
         actions={
-          <Button size="sm" onClick={openCreateModal} className="gap-1.5">
+          <Button
+            size="sm"
+            onClick={openCreateModal}
+            disabled={isAllPlatformsAdded}
+            title={isAllPlatformsAdded ? "All platforms have been added" : undefined}
+            className="gap-1.5"
+          >
             <PlusIcon className="size-3.5" /> Add Link
           </Button>
         }
@@ -211,7 +235,12 @@ export default function AdminSocialLinksPage() {
         ) : links.length === 0 ? (
           <div className="p-8 text-center space-y-3">
             <p className="text-xs text-muted-foreground">No social links configured yet.</p>
-            <Button size="xs" onClick={openCreateModal} className="gap-1">
+            <Button
+              size="xs"
+              onClick={openCreateModal}
+              disabled={isAllPlatformsAdded}
+              className="gap-1"
+            >
               <PlusIcon className="size-3" /> Add Link
             </Button>
           </div>
@@ -219,7 +248,7 @@ export default function AdminSocialLinksPage() {
           <div className="divide-y divide-border/60 dark:divide-line">
             {links.map((link, idx) => (
               <div
-                key={link.id}
+                key={link.id || `${link.platform}-${idx}`}
                 className="flex items-start gap-3.5 p-3.5 sm:px-5 hover:bg-muted/20 transition-colors"
               >
                 {/* Left Column: Stacked Reorder Buttons */}
@@ -349,7 +378,14 @@ export default function AdminSocialLinksPage() {
                     url: editingLink.url && editingLink.url !== "https://" ? editingLink.url : "",
                   })
                 }}
-                options={PLATFORMS.map((p) => ({ label: p, value: p }))}
+                options={PLATFORMS.map((p) => {
+                  const isUsed = usedPlatforms.has(p) && editingLink?.platform !== p
+                  return {
+                    label: isUsed ? `${p} (Already added)` : p,
+                    value: p,
+                    disabled: isUsed,
+                  }
+                })}
               />
             </FormField>
 

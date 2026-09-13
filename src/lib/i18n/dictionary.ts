@@ -61,6 +61,15 @@ const dictionary = {
       duration: "Duration",
       present: "Present",
     },
+    education: {
+      title: "Education",
+      callout:
+        "Academic foundation, degrees, coursework, and continuous learning journeys.",
+      degreeType: "Degree / Program",
+      studyPeriod: "Study Period",
+      duration: "Duration",
+      present: "Present",
+    },
     projects: {
       title: "Projects",
       viewAll: "View all",
@@ -226,6 +235,15 @@ const dictionary = {
         "Beberapa babak membangun, belajar, dan mengubah rasa ingin tahu teknis menjadi sistem yang berguna.",
       employmentType: "Jenis Pekerjaan",
       employmentPeriod: "Periode Kerja",
+      duration: "Durasi",
+      present: "Sekarang",
+    },
+    education: {
+      title: "Pendidikan",
+      callout:
+        "Fondasi akademis, gelar, mata kuliah, dan perjalanan pembelajaran berkelanjutan.",
+      degreeType: "Gelar / Program",
+      studyPeriod: "Masa Studi",
       duration: "Durasi",
       present: "Sekarang",
     },

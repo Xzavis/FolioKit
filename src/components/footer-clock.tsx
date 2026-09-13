@@ -12,8 +12,19 @@ import { useEffect, useState } from "react"
  * at twelve, so nothing shifts when it resolves.
  */
 
+function isValidTimeZone(tz?: string): boolean {
+  if (!tz) return false
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: tz })
+    return true
+  } catch {
+    return false
+  }
+}
+
 function useClockParts(timeZone: string) {
   const [now, setNow] = useState<Date | null>(null)
+  const safeZone = isValidTimeZone(timeZone) ? timeZone : "UTC"
 
   useEffect(() => {
     let timer: number | undefined
@@ -43,7 +54,7 @@ function useClockParts(timeZone: string) {
 
   // The zone's offset is deterministic, so it is derived here rather than held
   // in state: server and client resolve the same string for the same zone.
-  const offset = utcOffsetLabel(timeZone, now ?? new Date())
+  const offset = utcOffsetLabel(safeZone, now ?? new Date())
 
   if (!now) {
     return {
@@ -58,7 +69,7 @@ function useClockParts(timeZone: string) {
 
   const parts = Object.fromEntries(
     new Intl.DateTimeFormat("en-GB", {
-      timeZone,
+      timeZone: safeZone,
       hourCycle: "h23",
       hour: "2-digit",
       minute: "2-digit",
@@ -74,7 +85,7 @@ function useClockParts(timeZone: string) {
     minute: Number(parts.minute),
     second: Number(parts.second),
     label: new Intl.DateTimeFormat("en-US", {
-      timeZone,
+      timeZone: safeZone,
       hour12: true,
       hour: "numeric",
       minute: "2-digit",
